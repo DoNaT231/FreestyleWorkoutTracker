@@ -76,67 +76,72 @@ export default function ExercisesPage() {
       subtitle="Alap és saját gyakorlatok"
       headerActions={<LogoutButton />}
       footer={<AppNav />}
+      mainClassName="overflow-hidden"
     >
-      <Link to="/exercises/new">
-        <Button size="lg">+ Saját gyakorlat hozzáadása</Button>
-      </Link>
+      <div className="flex min-h-0 flex-1 flex-col gap-4">
+        <Link to="/exercises/new" className="shrink-0">
+          <Button size="lg">+ Saját gyakorlat hozzáadása</Button>
+        </Link>
 
-      <CategoryFilter value={categoryFilter} onChange={setCategoryFilter} />
+        <CategoryFilter value={categoryFilter} onChange={setCategoryFilter} />
 
-      {(error || deleteError) && (
-        <p
-          className="rounded-xl border border-red-900/50 bg-red-950/50 px-4 py-3 text-sm text-red-300"
-          role="alert"
-        >
-          {error || deleteError}
-        </p>
-      )}
-
-      {/* Saját gyakorlatok – felül, mert ezeket gyakrabban kezeled */}
-      <section>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-400">
-          Saját gyakorlatok ({filteredUserExercises.length})
-        </h2>
-        {filteredUserExercises.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-slate-700 px-4 py-6 text-center text-sm text-slate-500">
-            {userExercises.length === 0
-              ? 'Még nincs saját gyakorlatod. Add hozzá az elsőt!'
-              : 'Nincs találat ezzel a szűrővel.'}
+        {(error || deleteError) && (
+          <p
+            className="shrink-0 rounded-xl border border-red-900/50 bg-red-950/50 px-4 py-3 text-sm text-red-300"
+            role="alert"
+          >
+            {error || deleteError}
           </p>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {filteredUserExercises.map((exercise) => (
-              <ExerciseCard
-                key={exercise.id}
-                exercise={exercise}
-                isCustom
-                onDelete={() => handleDelete(exercise)}
-                deleting={deletingId === exercise.id}
-              />
-            ))}
-          </div>
         )}
-      </section>
 
-      {/* Alap gyakorlatok – seed script / defaultExercises collection */}
-      <section>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-400">
-          Alap gyakorlatok ({filteredDefaultExercises.length})
-        </h2>
-        {filteredDefaultExercises.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-slate-700 px-4 py-6 text-center text-sm text-slate-500">
-            {defaultExercises.length === 0
-              ? 'Nincs alap gyakorlat a Firestore-ban. Futtasd: npm run seed:exercises'
-              : 'Nincs találat ezzel a szűrővel.'}
-          </p>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {filteredDefaultExercises.map((exercise) => (
-              <ExerciseCard key={exercise.id} exercise={exercise} />
-            ))}
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="flex flex-col gap-6 pb-2">
+            <section>
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-400">
+                Saját gyakorlatok ({filteredUserExercises.length})
+              </h2>
+              {filteredUserExercises.length === 0 ? (
+                <p className="rounded-2xl border border-dashed border-slate-700 px-4 py-6 text-center text-sm text-slate-500">
+                  {userExercises.length === 0
+                    ? 'Még nincs saját gyakorlatod. Add hozzá az elsőt!'
+                    : 'Nincs találat ezzel a szűrővel.'}
+                </p>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {filteredUserExercises.map((exercise) => (
+                    <ExerciseCard
+                      key={exercise.id}
+                      exercise={exercise}
+                      isCustom
+                      onDelete={() => handleDelete(exercise)}
+                      deleting={deletingId === exercise.id}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section>
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-400">
+                Alap gyakorlatok ({filteredDefaultExercises.length})
+              </h2>
+              {filteredDefaultExercises.length === 0 ? (
+                <p className="rounded-2xl border border-dashed border-slate-700 px-4 py-6 text-center text-sm text-slate-500">
+                  {defaultExercises.length === 0
+                    ? 'Nincs alap gyakorlat a Firestore-ban. Futtasd: npm run seed:exercises'
+                    : 'Nincs találat ezzel a szűrővel.'}
+                </p>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {filteredDefaultExercises.map((exercise) => (
+                    <ExerciseCard key={exercise.id} exercise={exercise} />
+                  ))}
+                </div>
+              )}
+            </section>
           </div>
-        )}
-      </section>
+        </div>
+      </div>
     </AppLayout>
   )
 }

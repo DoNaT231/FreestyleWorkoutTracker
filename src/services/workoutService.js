@@ -10,8 +10,12 @@
 
 import {
   collection,
+  deleteDoc,
   doc,
+  getDoc,
   getDocs,
+  orderBy,
+  query,
   serverTimestamp,
   setDoc,
   updateDoc,
@@ -19,6 +23,7 @@ import {
 import { SYNC_STATUS, WORKOUT_STATUS } from '../constants/workout'
 import { db } from '../firebase'
 import { sanitizeWorkoutForFirestore } from '../utils/firestoreSanitize'
+import { mapWorkoutDocument } from '../utils/workoutDisplay'
 
 /**
  * User edzéseinek száma – automatikus „Edzés N” névhez.
@@ -26,6 +31,40 @@ import { sanitizeWorkoutForFirestore } from '../utils/firestoreSanitize'
 export async function getUserWorkoutCount(userId) {
   const snapshot = await getDocs(collection(db, 'users', userId, 'workouts'))
   return snapshot.size
+}
+
+/**
+ * Befejezett edzések listája – startedAt szerint csökkenő.
+ * @param {string} userId
+ */
+export async function fetchUserWorkouts(userId) {
+  const q = query(
+    collection(db, 'users', userId, 'workouts'),
+    orderBy('startedAt', 'desc'),
+  )
+  const snapshot = await getDocs(q)
+  return snapshot.docs
+    .map(mapWorkoutDocument)
+    .filter(Boolean)
+}
+
+/**
+ * Egy edzés betöltése ID alapján.
+ */
+export async function fetchWorkoutById(userId, workoutId) {
+  const ref = doc(db, 'users', userId, 'workouts', workoutId)
+  const snapshot = await getDoc(ref)
+  if (!snapshot.exists()) return null
+  return mapWorkoutDocument(snapshot)
+}
+
+/**
+ * Edzés törlése Firestore-ból (csak naplóból – megerősítéssel a UI-ban).
+ */
+export async function deleteWorkout(userId, workoutId) {
+  assertFirestoreIds(userId, workoutId)
+  const ref = doc(db, 'users', userId, 'workouts', workoutId)
+  await deleteDoc(ref)
 }
 
 /**

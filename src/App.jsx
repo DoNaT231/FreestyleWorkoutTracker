@@ -12,7 +12,9 @@
  * - /workout/new             → Új edzés (védett)
  * - /workout/active          → Aktív edzés flow (védett)
  * - /workout/summary         → Gyakorlat összegzés (védett)
- * - /history                 → Edzésnapló placeholder (védett)
+ * - /workout/done            → Poszt-edzés összegzés (védett)
+ * - /history                 → Edzésnapló lista (védett)
+ * - /history/:workoutId      → Edzés részletei + törlés (védett)
  * - /login, /register        → Auth (vendég)
  */
 
@@ -28,6 +30,8 @@ import LoginPage from './pages/LoginPage'
 import NewWorkoutPage from './pages/NewWorkoutPage'
 import RegisterPage from './pages/RegisterPage'
 import WorkoutHistoryPage from './pages/WorkoutHistoryPage'
+import WorkoutDetailPage from './pages/WorkoutDetailPage'
+import WorkoutPostSummaryPage from './pages/WorkoutPostSummaryPage'
 
 /** Védett route wrapper – rövidebb szintaxis */
 function Protected({ children }) {
@@ -94,10 +98,26 @@ export default function App() {
         }
       />
       <Route
+        path="/workout/done"
+        element={
+          <Protected>
+            <WorkoutPostSummaryPage />
+          </Protected>
+        }
+      />
+      <Route
         path="/history"
         element={
           <Protected>
             <WorkoutHistoryPage />
+          </Protected>
+        }
+      />
+      <Route
+        path="/history/:workoutId"
+        element={
+          <Protected>
+            <WorkoutDetailPage />
           </Protected>
         }
       />

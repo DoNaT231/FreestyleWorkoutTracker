@@ -57,7 +57,7 @@ export default function ExercisePicker({ exercises, onSelect, disabled }) {
       </p>
 
       {/* Csak a gyakorlatlista görget – kereső/szűrő fixen fent marad */}
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="min-h-0 flex-1 h-full overflow-y-auto">
         <div className="flex flex-col gap-2 pb-2">
           {filtered.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-slate-700 px-4 py-6 text-center text-sm text-slate-500">

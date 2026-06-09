@@ -11,13 +11,13 @@
  */
 
 export const EXERCISE_CATEGORIES = [
-  { value: 'pull', label: 'Húzó (pull)' },
-  { value: 'push', label: 'Toló (push)' },
-  { value: 'core', label: 'Törzs (core)' },
-  { value: 'legs', label: 'Láb (legs)' },
-  { value: 'skill', label: 'Skill / technika' },
-  { value: 'full_body', label: 'Teljes test' },
-  { value: 'cardio', label: 'Cardio / kondíció' },
+  { value: 'pull', label: 'Húzó (pull)', shortLabel: 'Húzó' },
+  { value: 'push', label: 'Toló (push)', shortLabel: 'Toló' },
+  { value: 'core', label: 'Törzs (core)', shortLabel: 'Törzs' },
+  { value: 'legs', label: 'Láb (legs)', shortLabel: 'Láb' },
+  { value: 'skill', label: 'Skill / technika', shortLabel: 'Skill' },
+  { value: 'full_body', label: 'Teljes test', shortLabel: 'Teljes test' },
+  { value: 'cardio', label: 'Cardio / kondíció', shortLabel: 'Cardio' },
 ]
 
 export const EXERCISE_TYPES = [

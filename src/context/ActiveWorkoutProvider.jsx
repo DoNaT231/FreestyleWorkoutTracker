@@ -14,6 +14,7 @@ import {
   loadActiveWorkout,
   saveActiveWorkout,
 } from '../services/activeWorkoutStorage'
+import { saveLastCompletedWorkout } from '../services/lastWorkoutSummaryStorage'
 import {
   finishWorkoutInFirestore,
   getUserWorkoutCount,
@@ -87,7 +88,7 @@ export function ActiveWorkoutProvider({ children }) {
       const trimmed = nameInput.trim()
       const customName = trimmed.length > 0
       const count = await getUserWorkoutCount(user.uid)
-      const fresh = createWorkout(user, {
+      const fresh = createWorkout(user.uid, {
         name: trimmed,
         customName,
         workoutNumber: count + 1,
@@ -280,28 +281,46 @@ export function ActiveWorkoutProvider({ children }) {
     return persist(next, false)
   }, [workout, persist])
 
-  const completeWorkout = useCallback(async () => {
-    if (!workout || !user) return null
+  const completeWorkout = useCallback(
+    async (workoutOverride) => {
+      const source = workoutOverride ?? workout
+      if (!source || !user) return null
 
-    const finished = {
-      ...workout,
-      userId: user.uid,
-      status: 'completed',
-      finishedAt: new Date().toISOString(),
-      currentExerciseLocalId: null,
-      timer: idleTimer(),
-    }
+      const finishedAt = new Date().toISOString()
+      const startedAt = source.startedAt ?? source.createdAt ?? finishedAt
+      const startMs = new Date(startedAt).getTime()
+      const endMs = new Date(finishedAt).getTime()
+      const durationSeconds =
+        Number.isFinite(startMs) && Number.isFinite(endMs) && endMs > startMs
+          ? Math.round((endMs - startMs) / 1000)
+          : null
 
-    try {
-      const firestoreId = await finishWorkoutInFirestore(finished)
-      clearActiveWorkout()
-      setWorkout(null)
-      return { ...finished, firestoreId, syncStatus: 'synced' }
-    } catch (error) {
-      console.error(error)
-      throw error
-    }
-  }, [workout, user])
+      const finished = {
+        ...source,
+        userId: user.uid,
+        startedAt,
+        status: 'completed',
+        finishedAt,
+        durationSeconds,
+        currentExerciseLocalId: null,
+        timer: idleTimer(),
+      }
+
+      let completed = { ...finished, syncStatus: 'pendingSync' }
+      saveLastCompletedWorkout(completed)
+
+      try {
+        const firestoreId = await finishWorkoutInFirestore(finished)
+        completed = { ...finished, firestoreId, syncStatus: 'synced' }
+        saveLastCompletedWorkout(completed)
+      } catch (error) {
+        console.error(error)
+      }
+
+      return completed
+    },
+    [workout, user],
+  )
 
   const value = useMemo(
     () => ({

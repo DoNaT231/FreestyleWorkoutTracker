@@ -9,6 +9,13 @@
 
 import { EXERCISE_CATEGORIES } from '../../constants/exerciseMeta'
 
+const chipClass = (active) =>
+  `rounded-full px-3 py-2 text-sm font-medium transition-colors ${
+    active
+      ? 'bg-emerald-500 text-slate-950'
+      : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'
+  }`
+
 /**
  * @param {object} props
  * @param {string|null} props.value – aktív szűrő (null = mind)
@@ -16,36 +23,35 @@ import { EXERCISE_CATEGORIES } from '../../constants/exerciseMeta'
  */
 export default function CategoryFilter({ value, onChange }) {
   return (
-    <div
-      className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      role="group"
-      aria-label="Szűrés mozgásminta szerint"
-    >
-      <button
-        type="button"
-        onClick={() => onChange(null)}
-        className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-          value === null
-            ? 'bg-emerald-500 text-slate-950'
-            : 'bg-slate-800 text-slate-400 hover:text-white'
-        }`}
+    <fieldset className="shrink-0">
+      <legend className="mb-2 text-sm font-medium text-slate-300">
+        Szűrés mozgásminta szerint
+      </legend>
+      <div
+        className="flex flex-wrap gap-2"
+        role="group"
+        aria-label="Szűrés mozgásminta szerint"
       >
-        Mind
-      </button>
-      {EXERCISE_CATEGORIES.map(({ value: categoryValue, label }) => (
         <button
-          key={categoryValue}
           type="button"
-          onClick={() => onChange(categoryValue)}
-          className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-            value === categoryValue
-              ? 'bg-emerald-500 text-slate-950'
-              : 'bg-slate-800 text-slate-400 hover:text-white'
-          }`}
+          onClick={() => onChange(null)}
+          className={chipClass(value === null)}
+          aria-pressed={value === null}
         >
-          {label}
+          Mind
         </button>
-      ))}
-    </div>
+        {EXERCISE_CATEGORIES.map(({ value: categoryValue, shortLabel }) => (
+          <button
+            key={categoryValue}
+            type="button"
+            onClick={() => onChange(categoryValue)}
+            className={chipClass(value === categoryValue)}
+            aria-pressed={value === categoryValue}
+          >
+            {shortLabel}
+          </button>
+        ))}
+      </div>
+    </fieldset>
   )
 }

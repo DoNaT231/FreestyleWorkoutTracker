@@ -31,14 +31,23 @@ export default function RestoreWorkoutModal() {
 
     try {
       const result = await completeWorkout()
-      if (result?.syncStatus === 'pendingSync') {
+      if (!result) {
+        setError('Nem sikerült menteni az edzést.')
+        return
+      }
+      if (result.syncStatus === 'pendingSync') {
         setError(
           'Az edzés elmentve offline – szinkronizálás később, de bezárhatod.',
         )
-        setTimeout(() => navigate('/', { replace: true }), 2000)
+        setTimeout(() => {
+          navigate('/workout/done', {
+            replace: true,
+            state: { workout: result },
+          })
+        }, 2000)
         return
       }
-      navigate('/', { replace: true })
+      navigate('/workout/done', { replace: true, state: { workout: result } })
     } catch (err) {
       console.error(err)
       setError('Nem sikerült menteni az edzést. Próbáld újra vagy folytasd.')

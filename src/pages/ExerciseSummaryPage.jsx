@@ -16,6 +16,7 @@ import LogoutButton from '../components/layout/LogoutButton'
 import ScrollNumberPicker from '../components/workout/ScrollNumberPicker'
 import Button from '../components/ui/Button'
 import { useActiveWorkout } from '../hooks/useActiveWorkout'
+import { loadLastCompletedWorkout } from '../services/lastWorkoutSummaryStorage'
 
 export default function ExerciseSummaryPage() {
   const navigate = useNavigate()
@@ -31,10 +32,21 @@ export default function ExerciseSummaryPage() {
   const [editingSetId, setEditingSetId] = useState(null)
   const [pickerValue, setPickerValue] = useState(8)
   const [busy, setBusy] = useState(false)
+  const [finishing, setFinishing] = useState(false)
   const [error, setError] = useState('')
 
-  if (!workout) {
+  if (!workout && !finishing) {
+    const last = loadLastCompletedWorkout()
+    if (last) {
+      return (
+        <Navigate to="/workout/done" replace state={{ workout: last }} />
+      )
+    }
     return <Navigate to="/" replace />
+  }
+
+  if (!workout) {
+    return null
   }
 
   const exercise =
@@ -66,14 +78,22 @@ export default function ExerciseSummaryPage() {
 
   const handleFinishWorkout = async () => {
     setBusy(true)
+    setFinishing(true)
     setError('')
 
     try {
-      await clearCurrentExerciseSelection()
-      await completeWorkout()
-      navigate('/', { replace: true })
+      const cleared = await clearCurrentExerciseSelection()
+      const completed = await completeWorkout(cleared)
+      if (!completed) {
+        setFinishing(false)
+        setError('Nem sikerült befejezni az edzést.')
+        setBusy(false)
+        return
+      }
+      navigate('/workout/done', { replace: true, state: { workout: completed } })
     } catch (err) {
       console.error(err)
+      setFinishing(false)
       setError('Nem sikerült befejezni az edzést. Ellenőrizd a kapcsolatot.')
       setBusy(false)
     }

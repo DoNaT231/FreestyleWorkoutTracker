@@ -1,31 +1,64 @@
 /**
- * Freestyle Workout Tracker – edzésnapló (placeholder)
+ * Freestyle Workout Tracker – edzésnapló lista
  *
  * Copyright (c) 2026 Komoróczy Donát
  * Email: donatkomoroczy@gmail.com
  *
- * A korábbi edzések listája – a 6. fázisban kap Firestore integrációt.
+ * Korábbi edzések Firestore-ból, dátum szerint rendezve.
  */
 
 import AppLayout from '../components/layout/AppLayout'
 import AppNav from '../components/layout/AppNav'
 import LogoutButton from '../components/layout/LogoutButton'
+import WorkoutHistoryCard from '../components/history/WorkoutHistoryCard'
+import LoadingScreen from '../components/ui/LoadingScreen'
+import { useWorkoutHistory } from '../hooks/useWorkoutHistory'
 
 export default function WorkoutHistoryPage() {
+  const { workouts, loading, error } = useWorkoutHistory()
+
+  if (loading) {
+    return <LoadingScreen message="Edzésnapló betöltése..." />
+  }
+
   return (
     <AppLayout
       title="Edzésnapló"
       subtitle="Korábbi edzéseid"
       headerActions={<LogoutButton />}
       footer={<AppNav />}
+      mainClassName="overflow-hidden"
     >
-      <section className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
-        <h2 className="text-lg font-semibold text-white">Hamarosan</h2>
-        <p className="mt-2 text-sm leading-relaxed text-slate-400">
-          Az edzésnapló a következő fázisban érkezik: korábbi edzések
-          listázása Firestore-ból, részletek megnyitása, törlés.
+      {error && (
+        <p
+          className="shrink-0 rounded-xl border border-red-900/50 bg-red-950/50 px-4 py-3 text-sm text-red-300"
+          role="alert"
+        >
+          {error}
         </p>
-      </section>
+      )}
+
+      {workouts.length === 0 ? (
+        <section className="rounded-2xl border border-dashed border-slate-700 px-4 py-10 text-center">
+          <p className="text-sm text-slate-400">
+            Még nincs mentett edzésed.
+          </p>
+          <p className="mt-2 text-xs text-slate-500">
+            Indíts egy edzést a főmenüből, majd fejezd be és mentsd el.
+          </p>
+        </section>
+      ) : (
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="flex flex-col gap-3 pb-2">
+            {workouts.map((workout) => (
+              <WorkoutHistoryCard
+                key={workout.firestoreId}
+                workout={workout}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </AppLayout>
   )
 }
