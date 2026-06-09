@@ -1,0 +1,35 @@
+/**
+ * Freestyle Workout Tracker – globális stílusok
+ *
+ * Copyright (c) 2026 Komoróczy Donát
+ * Email: donatkomoroczy@gmail.com
+ *
+ * Tailwind CSS import és alap mobil-first megjelenés.
+ * A komponensek Tailwind utility osztályokat használnak; itt csak a globális alapok vannak.
+ */
+
+/* Tailwind v4 – egy sorban behúzza az összes utility osztályt */
+@import 'tailwindcss';
+
+/* Egyedi téma változók – Tailwind @theme blokkban */
+@theme {
+  --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+}
+
+html {
+  /* Mobilon kikapcsolja a kék „tap highlight” csíkot gombnyomáskor */
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh; /* dvh = dynamic viewport – mobil böngésző címsorral együtt */
+  font-family: var(--font-sans);
+  background-color: #0f172a; /* slate-900 jellegű sötét háttér */
+  color: #f8fafc; /* világos szöveg */
+}
+
+#root {
+  /* A React app kitölti a teljes képernyő magasságot */
+  min-height: 100dvh;
+}

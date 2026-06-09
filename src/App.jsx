@@ -1,0 +1,95 @@
+/**
+ * Freestyle Workout Tracker – fő alkalmazás komponens
+ *
+ * Copyright (c) 2026 Komoróczy Donát
+ * Email: donatkomoroczy@gmail.com
+ *
+ * Route definíciók és auth védelem:
+ * - /                        → Dashboard (védett)
+ * - /exercises               → Gyakorlatok listája (védett)
+ * - /exercises/new           → Új saját gyakorlat (védett)
+ * - /exercises/:id/edit      → Saját gyakorlat szerkesztése (védett)
+ * - /history                 → Edzésnapló placeholder (védett)
+ * - /login, /register        → Auth (vendég)
+ */
+
+import { Navigate, Route, Routes } from 'react-router-dom'
+import GuestRoute from './components/auth/GuestRoute'
+import ProtectedRoute from './components/auth/ProtectedRoute'
+import DashboardPage from './pages/DashboardPage'
+import ExerciseFormPage from './pages/ExerciseFormPage'
+import ExercisesPage from './pages/ExercisesPage'
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
+import WorkoutHistoryPage from './pages/WorkoutHistoryPage'
+
+/** Védett route wrapper – rövidebb szintaxis */
+function Protected({ children }) {
+  return <ProtectedRoute>{children}</ProtectedRoute>
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <Protected>
+            <DashboardPage />
+          </Protected>
+        }
+      />
+      <Route
+        path="/exercises"
+        element={
+          <Protected>
+            <ExercisesPage />
+          </Protected>
+        }
+      />
+      <Route
+        path="/exercises/new"
+        element={
+          <Protected>
+            <ExerciseFormPage />
+          </Protected>
+        }
+      />
+      <Route
+        path="/exercises/:exerciseId/edit"
+        element={
+          <Protected>
+            <ExerciseFormPage />
+          </Protected>
+        }
+      />
+      <Route
+        path="/history"
+        element={
+          <Protected>
+            <WorkoutHistoryPage />
+          </Protected>
+        }
+      />
+
+      <Route
+        path="/login"
+        element={
+          <GuestRoute>
+            <LoginPage />
+          </GuestRoute>
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <GuestRoute>
+            <RegisterPage />
+          </GuestRoute>
+        }
+      />
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
+}

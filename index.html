@@ -1,0 +1,27 @@
+<!--
+  Freestyle Workout Tracker – HTML shell
+
+  Copyright (c) 2026 Komoróczy Donát
+  Email: donatkomoroczy@gmail.com
+
+  Ez az egyetlen statikus HTML fájl. A React app a #root div-be renderelődik.
+  A tényleges UI teljes egészében JavaScriptből (src/main.jsx) jön.
+-->
+<!doctype html>
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- viewport-fit=cover: iPhone notch / safe area támogatás -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- Böngésző címsor / status bar színe mobilon -->
+    <meta name="theme-color" content="#0f172a" />
+    <title>Freestyle Workout Tracker</title>
+  </head>
+  <body>
+    <!-- React mount pont – ide kerül az egész alkalmazás -->
+    <div id="root"></div>
+    <!-- ES modulként betöltött belépési pont (Vite bundolja) -->
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
