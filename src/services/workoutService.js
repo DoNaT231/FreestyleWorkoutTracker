@@ -1,0 +1,114 @@
+/**
+ * Freestyle Workout Tracker – edzés Firestore szinkron
+ *
+ * Copyright (c) 2026 Komoróczy Donát
+ * Email: donatkomoroczy@gmail.com
+ *
+ * Csak fontos eseményeknél írunk (nem másodpercenként).
+ * Sikertelen sync → pendingSync, localStorage megmarad.
+ */
+
+import {
+  collection,
+  doc,
+  getDocs,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+} from 'firebase/firestore'
+import { SYNC_STATUS, WORKOUT_STATUS } from '../constants/workout'
+import { db } from '../firebase'
+import { sanitizeWorkoutForFirestore } from '../utils/firestoreSanitize'
+
+/**
+ * User edzéseinek száma – automatikus „Edzés N” névhez.
+ */
+export async function getUserWorkoutCount(userId) {
+  const snapshot = await getDocs(collection(db, 'users', userId, 'workouts'))
+  return snapshot.size
+}
+
+/**
+ * Firestore dokumentumba menthető mezők.
+ */
+function toFirestoreWorkout(workout) {
+  return {
+    ...sanitizeWorkoutForFirestore(workout),
+    updatedAt: serverTimestamp(),
+  }
+}
+
+/**
+ * @param {string} userId
+ * @param {string|null|undefined} firestoreId
+ */
+function assertFirestoreIds(userId, firestoreId) {
+  if (typeof userId !== 'string' || !userId) {
+    throw new Error('Érvénytelen userId – nem menthető Firestore-ba.')
+  }
+  if (
+    firestoreId !== null &&
+    firestoreId !== undefined &&
+    typeof firestoreId !== 'string'
+  ) {
+    throw new Error('Érvénytelen firestoreId – nem menthető Firestore-ba.')
+  }
+}
+
+/**
+ * Edzés létrehozása vagy frissítése Firestore-ban.
+ * @returns {Promise<string>} firestore document id
+ */
+export async function syncWorkoutToFirestore(workout) {
+  const userId = workout.userId
+  assertFirestoreIds(userId, workout.firestoreId)
+
+  const payload = toFirestoreWorkout(workout)
+
+  if (!workout.firestoreId) {
+    const newRef = doc(collection(db, 'users', userId, 'workouts'))
+    await setDoc(newRef, {
+      ...payload,
+      createdAt: serverTimestamp(),
+    })
+    return newRef.id
+  }
+
+  const ref = doc(db, 'users', userId, 'workouts', workout.firestoreId)
+  await updateDoc(ref, payload)
+  return workout.firestoreId
+}
+
+/**
+ * Edzés befejezése Firestore-ban.
+ */
+export async function finishWorkoutInFirestore(workout) {
+  const payload = {
+    ...workout,
+    status: WORKOUT_STATUS.COMPLETED,
+    finishedAt: new Date().toISOString(),
+    timer: { phase: 'idle', startedAt: null, durationSeconds: 0 },
+  }
+  return syncWorkoutToFirestore(payload)
+}
+
+/**
+ * Próbál szinkronizálni; hiba esetén pendingSync státusz.
+ * @returns {Promise<object>} Frissített workout syncStatus-szal
+ */
+export async function trySyncWorkout(workout) {
+  try {
+    const firestoreId = await syncWorkoutToFirestore(workout)
+    return {
+      ...workout,
+      firestoreId,
+      syncStatus: SYNC_STATUS.SYNCED,
+    }
+  } catch (error) {
+    console.error('Firestore sync hiba:', error)
+    return {
+      ...workout,
+      syncStatus: SYNC_STATUS.PENDING,
+    }
+  }
+}

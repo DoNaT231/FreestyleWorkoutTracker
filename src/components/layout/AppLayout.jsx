@@ -13,8 +13,9 @@
  * @param {string} [props.title] – oldal főcíme (pl. „Dashboard”, „Aktív edzés”)
  * @param {string} [props.subtitle] – alcím / rövid leírás
  * @param {React.ReactNode} props.children – oldal tartalma
- * @param {React.ReactNode} [props.footer] – alsó sáv (pl. navigáció, nagy gombok)
+ * @param {React.ReactNode} [props.footer] – alsó sáv (pl. navigáció, fix gombok)
  * @param {React.ReactNode} [props.headerActions] – fejléc jobb oldali gombok (pl. kijelentkezés)
+ * @param {string} [props.mainClassName] – extra osztályok a main elemhez (pl. scroll layout)
  */
 export default function AppLayout({
   title,
@@ -22,10 +23,11 @@ export default function AppLayout({
   children,
   footer,
   headerActions,
+  mainClassName = '',
 }) {
   return (
     // max-w-lg ≈ 512px – telefonon teljes szélesség, nagy képernyőn középre igazítva
-    <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col bg-slate-950">
+    <div className="mx-auto flex h-dvh w-full max-w-lg flex-col bg-slate-950">
       <header className="border-b border-slate-800 px-4 py-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
@@ -44,11 +46,17 @@ export default function AppLayout({
         </div>
       </header>
 
-      {/* flex-1: a main kitölti a maradék helyet a fejléc és lábléc között */}
-      <main className="flex flex-1 flex-col gap-4 px-4 py-6">{children}</main>
+      {/* min-h-0: a belső scroll területek mobilon is működjenek flex alatt */}
+      <main
+        className={`flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 py-6 ${mainClassName}`}
+      >
+        {children}
+      </main>
 
       {footer && (
-        <footer className="border-t border-slate-800 px-4 py-4">{footer}</footer>
+        <footer className="shrink-0 border-t border-slate-800 bg-slate-950 px-4 py-4">
+          {footer}
+        </footer>
       )}
     </div>
   )

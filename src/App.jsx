@@ -9,6 +9,9 @@
  * - /exercises               → Gyakorlatok listája (védett)
  * - /exercises/new           → Új saját gyakorlat (védett)
  * - /exercises/:id/edit      → Saját gyakorlat szerkesztése (védett)
+ * - /workout/new             → Új edzés (védett)
+ * - /workout/active          → Aktív edzés flow (védett)
+ * - /workout/summary         → Gyakorlat összegzés (védett)
  * - /history                 → Edzésnapló placeholder (védett)
  * - /login, /register        → Auth (vendég)
  */
@@ -16,10 +19,13 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import GuestRoute from './components/auth/GuestRoute'
 import ProtectedRoute from './components/auth/ProtectedRoute'
+import ActiveWorkoutPage from './pages/ActiveWorkoutPage'
 import DashboardPage from './pages/DashboardPage'
 import ExerciseFormPage from './pages/ExerciseFormPage'
+import ExerciseSummaryPage from './pages/ExerciseSummaryPage'
 import ExercisesPage from './pages/ExercisesPage'
 import LoginPage from './pages/LoginPage'
+import NewWorkoutPage from './pages/NewWorkoutPage'
 import RegisterPage from './pages/RegisterPage'
 import WorkoutHistoryPage from './pages/WorkoutHistoryPage'
 
@@ -60,6 +66,30 @@ export default function App() {
         element={
           <Protected>
             <ExerciseFormPage />
+          </Protected>
+        }
+      />
+      <Route
+        path="/workout/new"
+        element={
+          <Protected>
+            <NewWorkoutPage />
+          </Protected>
+        }
+      />
+      <Route
+        path="/workout/active"
+        element={
+          <Protected>
+            <ActiveWorkoutPage />
+          </Protected>
+        }
+      />
+      <Route
+        path="/workout/summary"
+        element={
+          <Protected>
+            <ExerciseSummaryPage />
           </Protected>
         }
       />
