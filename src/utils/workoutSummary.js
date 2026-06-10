@@ -4,13 +4,17 @@
  * Copyright (c) 2026 Komoróczy Donát
  * Email: donatkomoroczy@gmail.com
  *
- * Csak mennyiségek: szettek, ismétlések, idő, összehasonlítás, rekordok.
- * Terhelés-pont és testsúly számítás később kerül ide.
+ * Szettek, ismétlések, idő, edzésterhelés, összehasonlítás, rekordok.
  */
 
 import { getCategoryLabel, getExerciseCategories } from '../constants/exerciseMeta'
 import { SET_STATUS, WORKOUT_STATUS } from '../constants/workout'
 import { formatWorkoutDate } from './formatDate'
+import {
+  calculateExerciseLoadScore,
+  calculateWorkoutTotals,
+  formatLoadScore,
+} from './trainingLoad'
 
 function getSetValue(set) {
   if (set?.reps == null) return null
@@ -58,8 +62,10 @@ export function formatWorkoutDuration(workout) {
 
 /**
  * Egy gyakorlat összegzése.
+ * @param {object} exercise
+ * @param {object} [workout] – edzésterheléshez (bodyWeightKgAtWorkout snapshot)
  */
-export function calculateExerciseSummary(exercise) {
+export function calculateExerciseSummary(exercise, workout = null) {
   const sets = exercise.sets ?? []
   const timeBased = isTimeExercise(exercise)
   const missingSets = sets.filter((s) => s.status === SET_STATUS.MISSING_REPS)
@@ -107,6 +113,7 @@ export function calculateExerciseSummary(exercise) {
     hasAdditionalWeight,
     maxAdditionalWeightKg: hasAdditionalWeight ? maxAdditionalWeight : 0,
     categories: getExerciseCategories(exercise),
+    loadScore: workout ? calculateExerciseLoadScore(exercise, workout) : null,
   }
 }
 
@@ -114,25 +121,32 @@ export function calculateExerciseSummary(exercise) {
  * Teljes edzés összegzés.
  */
 export function calculateWorkoutSummary(workout) {
-  const exercises = (workout.exercises ?? []).map(calculateExerciseSummary)
-
-  const totals = exercises.reduce(
-    (acc, ex) => ({
-      totalSets: acc.totalSets + ex.setCount,
-      totalReps: acc.totalReps + (ex.totalReps ?? 0),
-      totalTimeSeconds: acc.totalTimeSeconds + (ex.totalTimeSeconds ?? 0),
-    }),
-    { totalSets: 0, totalReps: 0, totalTimeSeconds: 0 },
+  const exercises = (workout.exercises ?? []).map((exercise) =>
+    calculateExerciseSummary(exercise, workout),
   )
+
+  const totals = calculateWorkoutTotals(workout)
+  const categoryLoadBreakdown = Object.entries(totals.categoryLoadBreakdown)
+    .map(([category, stats]) => ({
+      category,
+      label: getCategoryLabel(category),
+      ...stats,
+    }))
+    .sort((a, b) => b.loadScore - a.loadScore)
 
   return {
     workoutName: workout.name ?? 'Edzés',
     workoutDate: formatWorkoutDate(workout.finishedAt ?? workout.startedAt),
     durationLabel: formatWorkoutDuration(workout),
-    totalExercises: exercises.length,
+    totalExercises: totals.totalExercises,
     totalSets: totals.totalSets,
     totalReps: totals.totalReps,
     totalTimeSeconds: totals.totalTimeSeconds,
+    workoutLoadScore: totals.workoutLoadScore,
+    workoutLoadScoreLabel: formatLoadScore(totals.workoutLoadScore),
+    bodyWeightMissing: totals.bodyWeightMissing,
+    bodyWeightKgAtWorkout: workout.bodyWeightKgAtWorkout ?? null,
+    categoryLoadBreakdown,
     exercises,
   }
 }

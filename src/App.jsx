@@ -13,6 +13,7 @@
  * - /workout/active          → Aktív edzés flow (védett)
  * - /workout/summary         → Gyakorlat összegzés (védett)
  * - /workout/done            → Poszt-edzés összegzés (védett)
+ * - /progress                → Statisztikák (védett)
  * - /history                 → Edzésnapló lista (védett)
  * - /history/:workoutId      → Edzés részletei + törlés (védett)
  * - /login, /register        → Auth (vendég)
@@ -31,6 +32,8 @@ import NewWorkoutPage from './pages/NewWorkoutPage'
 import RegisterPage from './pages/RegisterPage'
 import WorkoutHistoryPage from './pages/WorkoutHistoryPage'
 import WorkoutDetailPage from './pages/WorkoutDetailPage'
+import ProfilePage from './pages/ProfilePage'
+import ProgressPage from './pages/ProgressPage'
 import WorkoutPostSummaryPage from './pages/WorkoutPostSummaryPage'
 
 /** Védett route wrapper – rövidebb szintaxis */
@@ -102,6 +105,22 @@ export default function App() {
         element={
           <Protected>
             <WorkoutPostSummaryPage />
+          </Protected>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <Protected>
+            <ProfilePage />
+          </Protected>
+        }
+      />
+      <Route
+        path="/progress"
+        element={
+          <Protected>
+            <ProgressPage />
           </Protected>
         }
       />

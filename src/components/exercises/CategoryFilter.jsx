@@ -10,7 +10,7 @@
 import { EXERCISE_CATEGORIES } from '../../constants/exerciseMeta'
 
 const chipClass = (active) =>
-  `rounded-full px-3 py-2 text-sm font-medium transition-colors ${
+  `shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
     active
       ? 'bg-emerald-500 text-slate-950'
       : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'
@@ -23,34 +23,36 @@ const chipClass = (active) =>
  */
 export default function CategoryFilter({ value, onChange }) {
   return (
-    <fieldset className="shrink-0">
-      <legend className="mb-2 text-sm font-medium text-slate-300">
+    <fieldset className="min-w-0 w-full shrink-0">
+      <legend className="mb-1 text-xs font-medium text-slate-400">
         Szűrés mozgásminta szerint
       </legend>
       <div
-        className="flex flex-wrap gap-2"
+        className="app-scroll-x w-full pb-2"
         role="group"
         aria-label="Szűrés mozgásminta szerint"
       >
-        <button
-          type="button"
-          onClick={() => onChange(null)}
-          className={chipClass(value === null)}
-          aria-pressed={value === null}
-        >
-          Mind
-        </button>
-        {EXERCISE_CATEGORIES.map(({ value: categoryValue, shortLabel }) => (
+        <div className="flex w-max gap-1.5 pr-1">
           <button
-            key={categoryValue}
             type="button"
-            onClick={() => onChange(categoryValue)}
-            className={chipClass(value === categoryValue)}
-            aria-pressed={value === categoryValue}
+            onClick={() => onChange(null)}
+            className={chipClass(value === null)}
+            aria-pressed={value === null}
           >
-            {shortLabel}
+            Mind
           </button>
-        ))}
+          {EXERCISE_CATEGORIES.map(({ value: categoryValue, shortLabel }) => (
+            <button
+              key={categoryValue}
+              type="button"
+              onClick={() => onChange(categoryValue)}
+              className={chipClass(value === categoryValue)}
+              aria-pressed={value === categoryValue}
+            >
+              {shortLabel}
+            </button>
+          ))}
+        </div>
       </div>
     </fieldset>
   )

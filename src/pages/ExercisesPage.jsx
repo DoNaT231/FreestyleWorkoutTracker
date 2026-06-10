@@ -78,7 +78,7 @@ export default function ExercisesPage() {
       footer={<AppNav />}
       mainClassName="overflow-hidden"
     >
-      <div className="flex min-h-0 flex-1 flex-col gap-4">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4">
         <Link to="/exercises/new" className="shrink-0">
           <Button size="lg">+ Saját gyakorlat hozzáadása</Button>
         </Link>

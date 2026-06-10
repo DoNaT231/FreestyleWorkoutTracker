@@ -15,6 +15,7 @@ import {
   saveActiveWorkout,
 } from '../services/activeWorkoutStorage'
 import { saveLastCompletedWorkout } from '../services/lastWorkoutSummaryStorage'
+import { fetchUserProfile } from '../services/profileService'
 import {
   finishWorkoutInFirestore,
   getUserWorkoutCount,
@@ -87,11 +88,17 @@ export function ActiveWorkoutProvider({ children }) {
 
       const trimmed = nameInput.trim()
       const customName = trimmed.length > 0
-      const count = await getUserWorkoutCount(user.uid)
+      const [count, profile] = await Promise.all([
+        getUserWorkoutCount(user.uid),
+        fetchUserProfile(user.uid).catch(() => null),
+      ])
+
       const fresh = createWorkout(user.uid, {
         name: trimmed,
         customName,
         workoutNumber: count + 1,
+        bodyWeightKgAtWorkout: profile?.bodyWeightKg ?? null,
+        heightCmAtWorkout: profile?.heightCm ?? null,
       })
 
       return persist(fresh)
@@ -248,11 +255,10 @@ export function ActiveWorkoutProvider({ children }) {
   )
 
   const startNextSet = useCallback(async () => {
-    const current = getCurrentExercise(workout)
-    if (!workout || !current) return null
+    if (!workout) return null
 
     const next = patchWorkout(workout, {
-      timer: createTimer(TIMER_PHASE.PREP, current.prepSeconds),
+      timer: idleTimer(TIMER_PHASE.ACTIVE_SET),
     })
     return persist(next, false)
   }, [workout, persist])

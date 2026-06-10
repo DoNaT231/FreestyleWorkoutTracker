@@ -11,20 +11,23 @@ import { Link, useNavigate } from 'react-router-dom'
 import AppLayout from '../components/layout/AppLayout'
 import AppNav from '../components/layout/AppNav'
 import LogoutButton from '../components/layout/LogoutButton'
+import ProfileSetupCard from '../components/profile/ProfileSetupCard'
 import RestoreWorkoutModal from '../components/workout/RestoreWorkoutModal'
 import Button from '../components/ui/Button'
 import LoadingScreen from '../components/ui/LoadingScreen'
 import { useActiveWorkout } from '../hooks/useActiveWorkout'
 import { useExercises } from '../hooks/useExercises'
 import { useAuth } from '../hooks/useAuth'
+import { useUserProfile } from '../hooks/useUserProfile'
 
 export default function DashboardPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { defaultExercises, userExercises, loading } = useExercises()
   const { hasActiveWorkout, hydrated, workout } = useActiveWorkout()
+  const { hasBodyWeight, loading: profileLoading } = useUserProfile()
 
-  if (loading || !hydrated) {
+  if (loading || !hydrated || profileLoading) {
     return <LoadingScreen message="Dashboard betöltése..." />
   }
 
@@ -55,6 +58,8 @@ export default function DashboardPage() {
           )}
         </section>
 
+        {!hasBodyWeight && <ProfileSetupCard />}
+
         {hasActiveWorkout ? (
           <Button size="xl" onClick={() => navigate('/workout/active')}>
             Edzés folytatása
@@ -72,6 +77,12 @@ export default function DashboardPage() {
         <Link to="/exercises">
           <Button variant="ghost" size="md">
             Gyakorlatok kezelése
+          </Button>
+        </Link>
+
+        <Link to="/profile">
+          <Button variant="ghost" size="md">
+            Profil
           </Button>
         </Link>
       </AppLayout>

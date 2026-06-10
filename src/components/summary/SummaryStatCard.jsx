@@ -5,9 +5,11 @@
  * Email: donatkomoroczy@gmail.com
  */
 
-export default function SummaryStatCard({ label, value }) {
+export default function SummaryStatCard({ label, value, className = '' }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
+    <div
+      className={`rounded-2xl border border-slate-800 bg-slate-900 p-4 ${className}`.trim()}
+    >
       <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
         {label}
       </p>

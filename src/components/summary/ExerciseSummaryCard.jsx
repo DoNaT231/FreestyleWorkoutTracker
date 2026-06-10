@@ -5,6 +5,8 @@
  * Email: donatkomoroczy@gmail.com
  */
 
+import { formatLoadScore } from '../../utils/trainingLoad'
+
 export default function ExerciseSummaryCard({ exercise, comparison }) {
   const timeBased = exercise.type === 'time'
 
@@ -36,6 +38,15 @@ export default function ExerciseSummaryCard({ exercise, comparison }) {
         {timeBased ? 'Legjobb tartás' : 'Legjobb szett'}:{' '}
         <span className="text-white">{bestLabel}</span>
       </p>
+
+      {exercise.loadScore != null && exercise.loadScore > 0 && (
+        <p className="mt-2 text-sm text-emerald-400">
+          Edzésterhelés:{' '}
+          <span className="font-medium text-white">
+            {formatLoadScore(exercise.loadScore)}
+          </span>
+        </p>
+      )}
 
       {exercise.hasAdditionalWeight && exercise.maxAdditionalWeightKg > 0 && (
         <p className="mt-1 text-xs text-slate-500">

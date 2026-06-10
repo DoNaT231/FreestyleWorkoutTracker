@@ -4,7 +4,7 @@
  * Copyright (c) 2026 Komoróczy Donát
  * Email: donatkomoroczy@gmail.com
  *
- * Mobilbarát alsó nav: Főoldal, Gyakorlatok, Edzésnapló.
+ * Mobilbarát alsó nav: Főoldal, Progress, Gyakorlatok, Napló.
  * Az aktív oldal kiemelve (emerald).
  */
 
@@ -12,6 +12,7 @@ import { NavLink } from 'react-router-dom'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Főoldal', end: true },
+  { to: '/progress', label: 'Progress', end: false },
   { to: '/exercises', label: 'Gyakorlatok', end: false },
   { to: '/history', label: 'Napló', end: false },
 ]

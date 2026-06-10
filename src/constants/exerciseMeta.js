@@ -68,6 +68,17 @@ export function getExerciseCategories(exercise) {
 }
 
 /**
+ * Elsődleges mozgásminta – explicit primaryCategory vagy categories[0].
+ * @param {object} exercise
+ * @returns {string|null}
+ */
+export function getPrimaryCategory(exercise) {
+  if (exercise?.primaryCategory) return exercise.primaryCategory
+  const categories = getExerciseCategories(exercise)
+  return categories[0] ?? null
+}
+
+/**
  * Kategóriák szöveges listája (pl. „Húzó · Toló · Skill”).
  */
 export function formatCategoriesLabel(exercise) {
@@ -118,5 +129,6 @@ export function buildCategoryPayload(categories) {
   return {
     categories: unique,
     category: unique[0] ?? null,
+    primaryCategory: unique[0] ?? null,
   }
 }

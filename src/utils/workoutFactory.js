@@ -7,7 +7,10 @@
  * Új edzés, gyakorlat másolása az edzésbe, szettek – a dokumentáció szerinti struktúra.
  */
 
-import { getExerciseCategories } from '../constants/exerciseMeta'
+import {
+  getExerciseCategories,
+  getPrimaryCategory,
+} from '../constants/exerciseMeta'
 import {
   SET_STATUS,
   SYNC_STATUS,
@@ -20,9 +23,18 @@ import { idleTimer } from './timer'
 /**
  * Új edzés váz.
  * @param {string} userId
- * @param {{ name: string, customName: boolean, workoutNumber: number }} options
+ * @param {{ name: string, customName: boolean, workoutNumber: number, bodyWeightKgAtWorkout?: number|null, heightCmAtWorkout?: number|null }} options
  */
-export function createWorkout(userId, { name, customName, workoutNumber }) {
+export function createWorkout(
+  userId,
+  {
+    name,
+    customName,
+    workoutNumber,
+    bodyWeightKgAtWorkout = null,
+    heightCmAtWorkout = null,
+  },
+) {
   const resolvedName = customName ? name.trim() : `Edzés ${workoutNumber}`
 
   return {
@@ -33,6 +45,8 @@ export function createWorkout(userId, { name, customName, workoutNumber }) {
     status: WORKOUT_STATUS.IN_PROGRESS,
     startedAt: new Date().toISOString(),
     finishedAt: null,
+    bodyWeightKgAtWorkout,
+    heightCmAtWorkout,
     syncStatus: SYNC_STATUS.PENDING,
     exercises: [],
     currentExerciseLocalId: null,
@@ -47,6 +61,7 @@ export function createWorkout(userId, { name, customName, workoutNumber }) {
  */
 export function createWorkoutExerciseFromTemplate(template, source) {
   const categories = getExerciseCategories(template)
+  const primaryCategory = getPrimaryCategory(template)
 
   return {
     localId: generateLocalId('ex'),
@@ -55,10 +70,15 @@ export function createWorkoutExerciseFromTemplate(template, source) {
     name: template.name,
     categories,
     category: categories[0] ?? null,
+    primaryCategory,
     type: template.type,
     restSeconds: template.defaultRestSeconds ?? 60,
     prepSeconds: template.defaultPrepSeconds ?? 10,
     supportsAdditionalWeight: Boolean(template.supportsAdditionalWeight),
+    bodyweightLoadFactor: template.bodyweightLoadFactor ?? null,
+    difficultyMultiplier: template.difficultyMultiplier ?? null,
+    staticHoldFactor: template.staticHoldFactor ?? null,
+    illustrationKey: template.illustrationKey ?? null,
     status: WORKOUT_STATUS.IN_PROGRESS,
     sets: [],
   }

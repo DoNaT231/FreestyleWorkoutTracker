@@ -21,6 +21,7 @@ import { TIMER_PHASE } from '../constants/workout'
 import { useActiveWorkout } from '../hooks/useActiveWorkout'
 import { useExercises } from '../hooks/useExercises'
 import { useWorkoutTimer } from '../hooks/useWorkoutTimer'
+import { playRestTimerEndSound } from '../utils/sounds'
 import { formatTimerDisplay } from '../utils/timer'
 
 export default function ActiveWorkoutPage() {
@@ -45,7 +46,15 @@ export default function ActiveWorkoutPage() {
   const [pickerReps, setPickerReps] = useState(8)
   const [busy, setBusy] = useState(false)
 
-  const remaining = useWorkoutTimer(workout?.timer, completePrep)
+  const handleRestComplete = useCallback(() => {
+    playRestTimerEndSound()
+    startNextSet()
+  }, [startNextSet])
+
+  const remaining = useWorkoutTimer(workout?.timer, {
+    onPrepComplete: completePrep,
+    onRestComplete: handleRestComplete,
+  })
 
   const current = getCurrentExercise()
   const phase = workout?.timer?.phase ?? TIMER_PHASE.IDLE

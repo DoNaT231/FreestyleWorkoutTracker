@@ -27,6 +27,22 @@ export function formatWorkoutDate(isoString) {
 /**
  * Rövidebb dátum a listához.
  */
+/**
+ * Csak dátum (testsúly napló, stb.).
+ */
+export function formatDateOnly(isoString) {
+  if (!isoString) return '—'
+
+  const date = new Date(isoString)
+  if (Number.isNaN(date.getTime())) return '—'
+
+  return new Intl.DateTimeFormat('hu-HU', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  }).format(date)
+}
+
 export function formatWorkoutDateShort(isoString) {
   if (!isoString) return '—'
 

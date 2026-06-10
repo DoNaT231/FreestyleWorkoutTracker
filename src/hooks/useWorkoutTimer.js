@@ -13,22 +13,24 @@ import { getTimerRemainingSeconds } from '../utils/timer'
 
 /**
  * @param {object|null} timer – workout.timer
- * @param {() => void} [onPrepComplete] – prep lejártakor (egyszer)
+ * @param {{ onPrepComplete?: () => void, onRestComplete?: () => void }} [callbacks]
  */
-export function useWorkoutTimer(timer, onPrepComplete) {
+export function useWorkoutTimer(timer, callbacks = {}) {
   const [, setTick] = useState(0)
   const timerRef = useRef(timer)
-  const onPrepCompleteRef = useRef(onPrepComplete)
+  const callbacksRef = useRef(callbacks)
   const prepTriggeredRef = useRef(false)
+  const restTriggeredRef = useRef(false)
 
   useEffect(() => {
     timerRef.current = timer
     prepTriggeredRef.current = false
+    restTriggeredRef.current = false
   }, [timer])
 
   useEffect(() => {
-    onPrepCompleteRef.current = onPrepComplete
-  }, [onPrepComplete])
+    callbacksRef.current = callbacks
+  }, [callbacks])
 
   useEffect(() => {
     if (!timer || timer.phase === TIMER_PHASE.IDLE) return undefined
@@ -37,13 +39,24 @@ export function useWorkoutTimer(timer, onPrepComplete) {
       setTick((t) => t + 1)
 
       const current = timerRef.current
+      const remaining = getTimerRemainingSeconds(current)
+
       if (
         current?.phase === TIMER_PHASE.PREP &&
-        getTimerRemainingSeconds(current) === 0 &&
+        remaining === 0 &&
         !prepTriggeredRef.current
       ) {
         prepTriggeredRef.current = true
-        onPrepCompleteRef.current?.()
+        callbacksRef.current.onPrepComplete?.()
+      }
+
+      if (
+        current?.phase === TIMER_PHASE.REST &&
+        remaining === 0 &&
+        !restTriggeredRef.current
+      ) {
+        restTriggeredRef.current = true
+        callbacksRef.current.onRestComplete?.()
       }
     }, 1000)
 
