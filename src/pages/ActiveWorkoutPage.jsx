@@ -22,7 +22,7 @@ import { useActiveWorkout } from '../hooks/useActiveWorkout'
 import { useExercises } from '../hooks/useExercises'
 import { useWorkoutTimer } from '../hooks/useWorkoutTimer'
 import { playRestTimerEndSound } from '../utils/sounds'
-import { formatTimerDisplay } from '../utils/timer'
+import { formatTimerDisplay, getTimerElapsedSeconds } from '../utils/timer'
 
 export default function ActiveWorkoutPage() {
   const navigate = useNavigate()
@@ -176,6 +176,11 @@ export default function ActiveWorkoutPage() {
   // --- Aktív szett ---
   if (phase === TIMER_PHASE.ACTIVE_SET) {
     const setNumber = current.sets.length + 1
+    const isTimeType = current.type === 'time'
+    const elapsedSeconds = isTimeType
+      ? getTimerElapsedSeconds(workout.timer)
+      : 0
+
     return (
       <AppLayout
         title={current.name}
@@ -183,8 +188,24 @@ export default function ActiveWorkoutPage() {
         headerActions={<LogoutButton />}
       >
         <div className="flex flex-1 flex-col items-center justify-center py-16">
-          <p className="text-2xl text-slate-400">{setNumber}. szett</p>
-          <p className="mt-2 text-lg text-white">Csak csináld – majd nyomj Vége-t</p>
+          {isTimeType ? (
+            <>
+              <p className="text-7xl font-bold tabular-nums text-emerald-400">
+                {formatTimerDisplay(elapsedSeconds)}
+              </p>
+              <p className="mt-2 text-slate-400">másodperc</p>
+              <p className="mt-4 text-center text-sm text-slate-500">
+                Tartsd a pozíciót – a Vége gomb rögzíti az időt
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-2xl text-slate-400">{setNumber}. szett</p>
+              <p className="mt-2 text-lg text-white">
+                Csak csináld – majd nyomj Vége-t
+              </p>
+            </>
+          )}
         </div>
         <Button size="xl" disabled={busy} onClick={() => run(() => finishActiveSet())}>
           Vége

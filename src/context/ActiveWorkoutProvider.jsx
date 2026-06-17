@@ -29,7 +29,12 @@ import {
   getUserWorkoutCount,
   trySyncWorkout,
 } from '../services/workoutService'
-import { createTimer, idleTimer } from '../utils/timer'
+import {
+  createTimer,
+  getTimerElapsedSeconds,
+  idleTimer,
+  startActiveSetTimer,
+} from '../utils/timer'
 import { getWorkoutDurationSeconds } from '../utils/workoutDuration'
 import {
   createSet,
@@ -186,7 +191,7 @@ export function ActiveWorkoutProvider({ children }) {
   const skipPrep = useCallback(async () => {
     if (!workout) return null
     const next = patchWorkout(workout, {
-      timer: idleTimer(TIMER_PHASE.ACTIVE_SET),
+      timer: startActiveSetTimer(),
     })
     return persist(next, false)
   }, [workout, persist])
@@ -194,7 +199,7 @@ export function ActiveWorkoutProvider({ children }) {
   const completePrep = useCallback(async () => {
     if (!workout) return null
     const next = patchWorkout(workout, {
-      timer: idleTimer(TIMER_PHASE.ACTIVE_SET),
+      timer: startActiveSetTimer(),
     })
     return persist(next, false)
   }, [workout, persist])
@@ -205,7 +210,14 @@ export function ActiveWorkoutProvider({ children }) {
 
     const setNumber = current.sets.length + 1
     const newSet = createSet(setNumber)
-    const closedSet = finishSetRecord(newSet, null)
+    const isTimeType = current.type === 'time'
+    const elapsedSeconds = isTimeType
+      ? getTimerElapsedSeconds(workout.timer)
+      : null
+    const closedSet = finishSetRecord(
+      newSet,
+      isTimeType ? elapsedSeconds : null,
+    )
 
     const updatedExercise = {
       ...current,
@@ -290,7 +302,7 @@ export function ActiveWorkoutProvider({ children }) {
     if (!workout) return null
 
     const next = patchWorkout(workout, {
-      timer: idleTimer(TIMER_PHASE.ACTIVE_SET),
+      timer: startActiveSetTimer(),
     })
     return persist(next, false)
   }, [workout, persist])

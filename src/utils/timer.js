@@ -14,13 +14,23 @@ import { TIMER_PHASE } from '../constants/workout'
  * @param {{ phase: string, startedAt?: number, durationSeconds?: number } | null | undefined} timer
  * @returns {number} Hátralévő másodpercek (minimum 0)
  */
+export function getTimerElapsedSeconds(timer) {
+  if (!timer?.startedAt) return 0
+  return Math.floor((Date.now() - timer.startedAt) / 1000)
+}
+
 export function getTimerRemainingSeconds(timer) {
   if (!timer || timer.phase === TIMER_PHASE.IDLE || !timer.startedAt) {
     return 0
   }
 
-  const elapsed = Math.floor((Date.now() - timer.startedAt) / 1000)
+  const elapsed = getTimerElapsedSeconds(timer)
   return Math.max((timer.durationSeconds ?? 0) - elapsed, 0)
+}
+
+/** Aktív szett indul – startedAt alapján felfelé számolható (tartás gyakorlatok). */
+export function startActiveSetTimer() {
+  return createTimer(TIMER_PHASE.ACTIVE_SET, 0)
 }
 
 /**
