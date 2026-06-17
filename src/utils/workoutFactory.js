@@ -17,6 +17,7 @@ import {
   TIMER_PHASE,
   WORKOUT_STATUS,
 } from '../constants/workout'
+import { resolveExerciseLoadSnapshot } from './scoring/loadDefaults'
 import { generateLocalId } from './id'
 import { idleTimer } from './timer'
 
@@ -62,6 +63,7 @@ export function createWorkout(
 export function createWorkoutExerciseFromTemplate(template, source) {
   const categories = getExerciseCategories(template)
   const primaryCategory = getPrimaryCategory(template)
+  const loadFields = resolveExerciseLoadSnapshot(template)
 
   return {
     localId: generateLocalId('ex'),
@@ -75,9 +77,9 @@ export function createWorkoutExerciseFromTemplate(template, source) {
     restSeconds: template.defaultRestSeconds ?? 60,
     prepSeconds: template.defaultPrepSeconds ?? 10,
     supportsAdditionalWeight: Boolean(template.supportsAdditionalWeight),
-    bodyweightLoadFactor: template.bodyweightLoadFactor ?? null,
-    difficultyMultiplier: template.difficultyMultiplier ?? null,
-    staticHoldFactor: template.staticHoldFactor ?? null,
+    bodyweightLoadFactor: loadFields.bodyweightLoadFactor,
+    difficultyMultiplier: loadFields.difficultyMultiplier,
+    staticHoldFactor: loadFields.staticHoldFactor,
     illustrationKey: template.illustrationKey ?? null,
     status: WORKOUT_STATUS.IN_PROGRESS,
     sets: [],

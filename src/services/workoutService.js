@@ -125,7 +125,7 @@ export async function finishWorkoutInFirestore(workout) {
   const payload = {
     ...workout,
     status: WORKOUT_STATUS.COMPLETED,
-    finishedAt: new Date().toISOString(),
+    finishedAt: workout.finishedAt ?? new Date().toISOString(),
     timer: { phase: 'idle', startedAt: null, durationSeconds: 0 },
   }
   return syncWorkoutToFirestore(payload)

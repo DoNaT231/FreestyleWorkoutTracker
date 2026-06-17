@@ -14,6 +14,7 @@
  * - /workout/summary         → Gyakorlat összegzés (védett)
  * - /workout/done            → Poszt-edzés összegzés (védett)
  * - /progress                → Statisztikák (védett)
+ * - /guide/scoring           → Pontszámok magyarázata (védett)
  * - /history                 → Edzésnapló lista (védett)
  * - /history/:workoutId      → Edzés részletei + törlés (védett)
  * - /login, /register        → Auth (vendég)
@@ -34,6 +35,7 @@ import WorkoutHistoryPage from './pages/WorkoutHistoryPage'
 import WorkoutDetailPage from './pages/WorkoutDetailPage'
 import ProfilePage from './pages/ProfilePage'
 import ProgressPage from './pages/ProgressPage'
+import ScoringGuidePage from './pages/ScoringGuidePage'
 import WorkoutPostSummaryPage from './pages/WorkoutPostSummaryPage'
 
 /** Védett route wrapper – rövidebb szintaxis */
@@ -121,6 +123,14 @@ export default function App() {
         element={
           <Protected>
             <ProgressPage />
+          </Protected>
+        }
+      />
+      <Route
+        path="/guide/scoring"
+        element={
+          <Protected>
+            <ScoringGuidePage />
           </Protected>
         }
       />

@@ -3,8 +3,6 @@
  *
  * Copyright (c) 2026 Komoróczy Donát
  * Email: donatkomoroczy@gmail.com
- *
- * Edzés után: mit csináltál, kiemelések, heti összegzés.
  */
 
 import { useEffect, useMemo, useState } from 'react'
@@ -17,6 +15,12 @@ import SummaryStatCard from '../components/summary/SummaryStatCard'
 import WeeklyInsightCard from '../components/summary/WeeklyInsightCard'
 import AppLayout from '../components/layout/AppLayout'
 import Button from '../components/ui/Button'
+import {
+  formatEstimated1RM,
+  formatRelativeStrength,
+  formatReliability,
+  formatScorePoints,
+} from '../utils/scoring/format'
 import { useAuth } from '../hooks/useAuth'
 import { loadLastCompletedWorkout } from '../services/lastWorkoutSummaryStorage'
 import { fetchUserWorkouts } from '../services/workoutService'
@@ -101,9 +105,13 @@ export default function WorkoutPostSummaryPage() {
           {summary.bodyWeightMissing && (
             <section className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4">
               <p className="text-sm text-slate-300">
-                Az edzésterhelés számításához add meg a testsúlyod a profilban.
+                Az edzésterhelés és erőszint számításához add meg a testsúlyod
+                a profilban.
               </p>
-              <Link to="/profile" className="mt-3 inline-block text-sm font-medium text-emerald-400">
+              <Link
+                to="/profile"
+                className="mt-3 inline-block text-sm font-medium text-emerald-400"
+              >
                 Profil beállítása →
               </Link>
             </section>
@@ -116,34 +124,78 @@ export default function WorkoutPostSummaryPage() {
             <div className="grid grid-cols-2 gap-2">
               <SummaryStatCard
                 label="Edzésterhelés"
-                value={summary.workoutLoadScoreLabel}
+                value={formatScorePoints(summary.trainingLoadScore)}
                 className="col-span-2"
               />
+              {summary.bestEstimated1RM != null &&
+                summary.bestEstimated1RM > 0 && (
+                <SummaryStatCard
+                  label="Legjobb erőszint"
+                  value={formatEstimated1RM(summary.bestEstimated1RM)}
+                />
+              )}
+              {summary.bestRelativeStrength != null &&
+                summary.bestRelativeStrength > 0 && (
+                <SummaryStatCard
+                  label="Relatív erő"
+                  value={formatRelativeStrength(summary.bestRelativeStrength)}
+                  detail={
+                    summary.bestStrengthReliability
+                      ? `Megbízhatóság: ${formatReliability(summary.bestStrengthReliability)}`
+                      : undefined
+                  }
+                />
+              )}
+              {(summary.holdScore ?? 0) > 0 && (
+                <SummaryStatCard
+                  label="Statikus tartás pont"
+                  value={formatScorePoints(summary.holdScore)}
+                  className="col-span-2"
+                />
+              )}
               <SummaryStatCard label="Szett" value={summary.totalSets} />
               <SummaryStatCard
                 label="Összes ismétlés"
                 value={summary.totalReps}
               />
               <SummaryStatCard
-                label="Összes idő"
-                value={
-                  summary.totalTimeSeconds > 0
-                    ? `${summary.totalTimeSeconds} mp`
-                    : '—'
-                }
+                label="Edzés időtartama"
+                value={summary.durationLabel ?? '—'}
+                className="col-span-2"
               />
+              {summary.totalTimeSeconds > 0 && (
+                <SummaryStatCard
+                  label="Tartás összesen"
+                  value={`${summary.totalTimeSeconds} mp`}
+                  className="col-span-2"
+                />
+              )}
             </div>
           </section>
 
-          {summary.categoryLoadBreakdown?.length > 0 &&
+          <section className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+              Mit jelentenek a számok?
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-slate-300">
+              Az edzésterhelés, erőszint és tartás pont külön mutatók – mindegyik
+              más kérdésre válaszol. Rövid magyarázat és példák az útmutatóban.
+            </p>
+            <Link
+              to="/guide/scoring"
+              className="mt-3 inline-block text-sm font-medium text-emerald-400 hover:text-emerald-300"
+            >
+              Pontszámok magyarázata →
+            </Link>
+          </section>
+
+          {summary.categoryBreakdown?.length > 0 &&
             !summary.bodyWeightMissing && (
               <section>
                 <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-400">
                   Mozgásminták szerint
                 </h2>
-                <CategoryLoadBreakdownList
-                  items={summary.categoryLoadBreakdown}
-                />
+                <CategoryLoadBreakdownList items={summary.categoryBreakdown} />
               </section>
             )}
 
@@ -164,11 +216,11 @@ export default function WorkoutPostSummaryPage() {
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-400">
               Gyakorlatok
             </h2>
-            {summary.exercises.length === 0 ? (
+            {summary.exerciseSummaries.length === 0 ? (
               <p className="text-sm text-slate-500">Nincs rögzített gyakorlat.</p>
             ) : (
               <div className="flex flex-col gap-3">
-                {summary.exercises.map((ex) => (
+                {summary.exerciseSummaries.map((ex) => (
                   <ExerciseSummaryCard
                     key={ex.exerciseId + ex.name}
                     exercise={ex}

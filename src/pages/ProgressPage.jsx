@@ -7,6 +7,7 @@
  * Váz oldal – a részletes statisztikák később kerülnek ide.
  */
 
+import { Link } from 'react-router-dom'
 import AppLayout from '../components/layout/AppLayout'
 import AppNav from '../components/layout/AppNav'
 import LogoutButton from '../components/layout/LogoutButton'
@@ -17,7 +18,7 @@ const PLACEHOLDER_SECTIONS = [
     description: 'Összesített szettek, ismétlések, edzésszám és időtartam.',
   },
   {
-    title: 'Edzésterhelés',
+    title: 'Edzésterhelés trend',
     description: 'Heti és havi terhelés trend, mozgásminták szerinti bontás.',
   },
   {
@@ -41,6 +42,20 @@ export default function ProgressPage() {
     >
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="flex flex-col gap-4 pb-2">
+          <section className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4">
+            <h2 className="font-semibold text-white">Pontszámok magyarázata</h2>
+            <p className="mt-2 text-sm leading-relaxed text-slate-300">
+              Edzésterhelés, erőszint, relatív erő, tartás pont – mindegyikhez
+              rövid magyarázat és „Tovább olvasok” rész konkrét példákkal.
+            </p>
+            <Link
+              to="/guide/scoring"
+              className="mt-3 inline-block text-sm font-medium text-emerald-400 hover:text-emerald-300"
+            >
+              Útmutató megnyitása →
+            </Link>
+          </section>
+
           <section className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
             <p className="text-sm text-slate-300">
               Itt fogod látni az edzéseid, testsúlyod és rekordjaid

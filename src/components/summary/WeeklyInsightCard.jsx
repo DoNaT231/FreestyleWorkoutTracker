@@ -21,6 +21,9 @@ export default function WeeklyInsightCard({ weekly }) {
         {weekly.totalTimeSeconds > 0 && (
           <li>{weekly.totalTimeSeconds} mp tartás összesen</li>
         )}
+        {(weekly.totalTrainingLoad ?? 0) > 0 && (
+          <li>{Math.round(weekly.totalTrainingLoad)} pont edzésterhelés</li>
+        )}
       </ul>
 
       {weekly.categoryBreakdown?.length > 0 && (

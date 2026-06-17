@@ -5,7 +5,12 @@
  * Email: donatkomoroczy@gmail.com
  */
 
-export default function SummaryStatCard({ label, value, className = '' }) {
+export default function SummaryStatCard({
+  label,
+  value,
+  detail,
+  className = '',
+}) {
   return (
     <div
       className={`rounded-2xl border border-slate-800 bg-slate-900 p-4 ${className}`.trim()}
@@ -14,6 +19,9 @@ export default function SummaryStatCard({ label, value, className = '' }) {
         {label}
       </p>
       <p className="mt-1 text-2xl font-bold text-white">{value}</p>
+      {detail && (
+        <p className="mt-1 text-xs text-slate-500">{detail}</p>
+      )}
     </div>
   )
 }

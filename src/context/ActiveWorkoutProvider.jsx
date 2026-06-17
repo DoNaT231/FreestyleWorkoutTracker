@@ -22,6 +22,7 @@ import {
   trySyncWorkout,
 } from '../services/workoutService'
 import { createTimer, idleTimer } from '../utils/timer'
+import { getWorkoutDurationSeconds } from '../utils/workoutDuration'
 import {
   createSet,
   createWorkout,
@@ -294,12 +295,6 @@ export function ActiveWorkoutProvider({ children }) {
 
       const finishedAt = new Date().toISOString()
       const startedAt = source.startedAt ?? source.createdAt ?? finishedAt
-      const startMs = new Date(startedAt).getTime()
-      const endMs = new Date(finishedAt).getTime()
-      const durationSeconds =
-        Number.isFinite(startMs) && Number.isFinite(endMs) && endMs > startMs
-          ? Math.round((endMs - startMs) / 1000)
-          : null
 
       const finished = {
         ...source,
@@ -307,7 +302,11 @@ export function ActiveWorkoutProvider({ children }) {
         startedAt,
         status: 'completed',
         finishedAt,
-        durationSeconds,
+        durationSeconds: getWorkoutDurationSeconds({
+          ...source,
+          startedAt,
+          finishedAt,
+        }),
         currentExerciseLocalId: null,
         timer: idleTimer(),
       }
