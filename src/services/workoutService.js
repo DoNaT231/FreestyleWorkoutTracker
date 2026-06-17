@@ -21,6 +21,7 @@ import {
   updateDoc,
 } from 'firebase/firestore'
 import { SYNC_STATUS, WORKOUT_STATUS } from '../constants/workout'
+import { GUEST_USER_ID } from '../constants/guest'
 import { db } from '../firebase'
 import { sanitizeWorkoutForFirestore } from '../utils/firestoreSanitize'
 import { mapWorkoutDocument } from '../utils/workoutDisplay'
@@ -99,6 +100,10 @@ function assertFirestoreIds(userId, firestoreId) {
  * @returns {Promise<string>} firestore document id
  */
 export async function syncWorkoutToFirestore(workout) {
+  if (workout.userId === GUEST_USER_ID) {
+    throw new Error('Vendég edzés nem menthető Firestore-ba.')
+  }
+
   const userId = workout.userId
   assertFirestoreIds(userId, workout.firestoreId)
 

@@ -24,6 +24,8 @@ import {
 import { useAuth } from '../hooks/useAuth'
 import { loadLastCompletedWorkout } from '../services/lastWorkoutSummaryStorage'
 import { fetchUserWorkouts } from '../services/workoutService'
+import { isGuestUser } from '../utils/guestUser'
+import { getGuestWorkouts } from '../utils/guestWorkouts'
 import { buildPostWorkoutSummary } from '../utils/workoutSummary'
 
 export default function WorkoutPostSummaryPage() {
@@ -42,6 +44,15 @@ export default function WorkoutPostSummaryPage() {
     if (!user || !workout) return
 
     let cancelled = false
+
+    if (isGuestUser(user)) {
+      Promise.resolve().then(() => {
+        if (!cancelled) setPastWorkouts(getGuestWorkouts())
+      })
+      return () => {
+        cancelled = true
+      }
+    }
 
     fetchUserWorkouts(user.uid)
       .then((list) => {

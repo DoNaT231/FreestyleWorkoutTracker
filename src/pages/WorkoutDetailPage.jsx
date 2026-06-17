@@ -19,6 +19,8 @@ import { getExerciseCategories } from '../constants/exerciseMeta'
 import { useAuth } from '../hooks/useAuth'
 import { useWorkoutHistory } from '../hooks/useWorkoutHistory'
 import { fetchWorkoutById } from '../services/workoutService'
+import { isGuestUser } from '../utils/guestUser'
+import { getGuestWorkoutById } from '../utils/guestWorkouts'
 import { formatWorkoutDate } from '../utils/formatDate'
 import { formatSetValue, getWorkoutStats } from '../utils/workoutDisplay'
 
@@ -37,6 +39,19 @@ export default function WorkoutDetailPage() {
     if (!user || !workoutId) return
 
     let cancelled = false
+
+    if (isGuestUser(user)) {
+      Promise.resolve().then(() => {
+        if (cancelled) return
+        const data = getGuestWorkoutById(workoutId)
+        if (!data) setError('Az edzés nem található.')
+        else setWorkout(data)
+        setLoading(false)
+      })
+      return () => {
+        cancelled = true
+      }
+    }
 
     fetchWorkoutById(user.uid, workoutId)
       .then((data) => {

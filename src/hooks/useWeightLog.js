@@ -6,11 +6,13 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { DEMO_WEIGHT_LOG } from '../data/demoData'
 import {
   deleteWeightLogEntry,
   fetchWeightLog,
   logBodyWeight,
 } from '../services/weightLogService'
+import { isGuestUser } from '../utils/guestUser'
 import { useAuth } from './useAuth'
 
 export function useWeightLog() {
@@ -28,6 +30,12 @@ export function useWeightLog() {
     setError('')
 
     try {
+      if (isGuestUser(user)) {
+        if (requestId !== requestIdRef.current) return DEMO_WEIGHT_LOG
+        setEntries(DEMO_WEIGHT_LOG)
+        return DEMO_WEIGHT_LOG
+      }
+
       const data = await fetchWeightLog(user.uid)
       if (requestId !== requestIdRef.current) return data
       setEntries(data)
@@ -54,6 +62,15 @@ export function useWeightLog() {
     const requestId = ++requestIdRef.current
     setReady(false)
 
+    if (isGuestUser(user)) {
+      Promise.resolve().then(() => {
+        if (requestId !== requestIdRef.current) return
+        setEntries(DEMO_WEIGHT_LOG)
+        setReady(true)
+      })
+      return
+    }
+
     fetchWeightLog(user.uid)
       .then((data) => {
         if (requestId !== requestIdRef.current) return
@@ -78,6 +95,16 @@ export function useWeightLog() {
 
       setError('')
       try {
+        if (isGuestUser(user)) {
+          const entry = {
+            id: `guest-${Date.now()}`,
+            weightKg: Number(weightKg),
+            recordedAt: recordedAt ?? new Date().toISOString(),
+          }
+          setEntries((prev) => [entry, ...prev])
+          return entry
+        }
+
         const entry = await logBodyWeight(user.uid, weightKg, recordedAt)
         setEntries((prev) => [entry, ...prev])
         return entry
@@ -96,6 +123,11 @@ export function useWeightLog() {
 
       setError('')
       try {
+        if (isGuestUser(user)) {
+          setEntries((prev) => prev.filter((entry) => entry.id !== entryId))
+          return null
+        }
+
         const latest = await deleteWeightLogEntry(user.uid, entryId)
         setEntries((prev) => prev.filter((entry) => entry.id !== entryId))
         return latest

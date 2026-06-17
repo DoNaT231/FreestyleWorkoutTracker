@@ -14,7 +14,15 @@ import {
   loadActiveWorkout,
   saveActiveWorkout,
 } from '../services/activeWorkoutStorage'
+import {
+  appendGuestWorkout,
+  clearGuestActiveWorkout,
+  loadGuestActiveWorkout,
+  loadGuestWorkouts,
+  saveGuestActiveWorkout,
+} from '../services/guestStorage'
 import { saveLastCompletedWorkout } from '../services/lastWorkoutSummaryStorage'
+import { DEMO_PROFILE } from '../data/demoData'
 import { fetchUserProfile } from '../services/profileService'
 import {
   finishWorkoutInFirestore,
@@ -33,6 +41,7 @@ import {
   patchWorkout,
 } from '../utils/workoutFactory'
 import { useAuth } from '../hooks/useAuth'
+import { isGuestUser } from '../utils/guestUser'
 import { ActiveWorkoutContext } from './activeWorkoutContext'
 
 export function ActiveWorkoutProvider({ children }) {
@@ -56,10 +65,12 @@ export function ActiveWorkoutProvider({ children }) {
       }
     }
 
-    const stored = loadActiveWorkout()
+    const stored = isGuestUser(user)
+      ? loadGuestActiveWorkout()
+      : loadActiveWorkout()
     Promise.resolve().then(() => {
       if (cancelled) return
-      if (stored?.userId === user.uid) {
+      if (stored?.userId === user.uid || isGuestUser(user)) {
         setWorkout(stored)
       }
       setHydrated(true)
@@ -72,6 +83,13 @@ export function ActiveWorkoutProvider({ children }) {
 
   const persist = useCallback(async (nextWorkout, sync = true) => {
     const withUser = user ? { ...nextWorkout, userId: user.uid } : nextWorkout
+
+    if (isGuestUser(user)) {
+      saveGuestActiveWorkout(withUser)
+      setWorkout(withUser)
+      return withUser
+    }
+
     saveActiveWorkout(withUser)
     setWorkout(withUser)
 
@@ -89,10 +107,19 @@ export function ActiveWorkoutProvider({ children }) {
 
       const trimmed = nameInput.trim()
       const customName = trimmed.length > 0
-      const [count, profile] = await Promise.all([
-        getUserWorkoutCount(user.uid),
-        fetchUserProfile(user.uid).catch(() => null),
-      ])
+
+      let count = 0
+      let profile = null
+
+      if (isGuestUser(user)) {
+        count = loadGuestWorkouts().length
+        profile = DEMO_PROFILE
+      } else {
+        ;[count, profile] = await Promise.all([
+          getUserWorkoutCount(user.uid),
+          fetchUserProfile(user.uid).catch(() => null),
+        ])
+      }
 
       const fresh = createWorkout(user.uid, {
         name: trimmed,
@@ -108,9 +135,13 @@ export function ActiveWorkoutProvider({ children }) {
   )
 
   const discardWorkout = useCallback(() => {
-    clearActiveWorkout()
+    if (isGuestUser(user)) {
+      clearGuestActiveWorkout()
+    } else {
+      clearActiveWorkout()
+    }
     setWorkout(null)
-  }, [])
+  }, [user])
 
   const addExercise = useCallback(
     async (template, source) => {
@@ -311,8 +342,21 @@ export function ActiveWorkoutProvider({ children }) {
         timer: idleTimer(),
       }
 
-      let completed = { ...finished, syncStatus: 'pendingSync' }
+      let completed = {
+        ...finished,
+        firestoreId: finished.firestoreId ?? `guest-${Date.now()}`,
+        isDemo: false,
+        syncStatus: 'synced',
+      }
+
       saveLastCompletedWorkout(completed)
+
+      if (isGuestUser(user)) {
+        appendGuestWorkout(completed)
+        clearGuestActiveWorkout()
+        clearActiveWorkout()
+        return completed
+      }
 
       try {
         const firestoreId = await finishWorkoutInFirestore(finished)

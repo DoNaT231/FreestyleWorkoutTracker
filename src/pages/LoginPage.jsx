@@ -17,7 +17,7 @@ import { useAuth } from '../hooks/useAuth'
 import { getAuthErrorMessage } from '../utils/authErrors'
 
 export default function LoginPage() {
-  const { login } = useAuth()
+  const { login, loginAsGuest } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -36,6 +36,19 @@ export default function LoginPage() {
 
     try {
       await login(email.trim(), password)
+      navigate(from, { replace: true })
+    } catch (err) {
+      setError(getAuthErrorMessage(err))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleGuestLogin = async () => {
+    setError('')
+    setSubmitting(true)
+    try {
+      await loginAsGuest()
       navigate(from, { replace: true })
     } catch (err) {
       setError(getAuthErrorMessage(err))
@@ -88,6 +101,29 @@ export default function LoginPage() {
           {submitting ? 'Bejelentkezés...' : 'Bejelentkezés'}
         </Button>
       </form>
+
+      <div className="relative my-2">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-slate-800" />
+        </div>
+        <p className="relative mx-auto w-fit bg-slate-950 px-3 text-xs text-slate-500">
+          vagy
+        </p>
+      </div>
+
+      <Button
+        type="button"
+        variant="secondary"
+        size="lg"
+        disabled={submitting}
+        onClick={handleGuestLogin}
+      >
+        Demó kipróbálása (vendég)
+      </Button>
+      <p className="text-center text-xs text-slate-500">
+        Az edzések a böngésződben maradnak, a gyakorlatok a beépített
+        katalógusból jönnek.
+      </p>
 
       <p className="text-center text-sm text-slate-400">
         Nincs még fiókod?{' '}

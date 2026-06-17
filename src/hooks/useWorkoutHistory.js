@@ -12,7 +12,15 @@ import {
   deleteWorkout,
   fetchUserWorkouts,
 } from '../services/workoutService'
+import {
+  GUEST_WORKOUTS_UPDATED_EVENT,
+  removeGuestWorkout,
+} from '../services/guestStorage'
+import { getGuestWorkouts } from '../utils/guestWorkouts'
+import { isGuestUser } from '../utils/guestUser'
 import { useAuth } from './useAuth'
+
+export { getGuestWorkouts }
 
 export function useWorkoutHistory() {
   const { user } = useAuth()
@@ -26,8 +34,12 @@ export function useWorkoutHistory() {
     setError('')
 
     try {
-      const data = await fetchUserWorkouts(user.uid)
-      setWorkouts(data)
+      if (isGuestUser(user)) {
+        setWorkouts(getGuestWorkouts())
+      } else {
+        const data = await fetchUserWorkouts(user.uid)
+        setWorkouts(data)
+      }
     } catch (err) {
       console.error(err)
       setError('Nem sikerült betölteni az edzésnaplót.')
@@ -46,6 +58,19 @@ export function useWorkoutHistory() {
     }
 
     let cancelled = false
+
+    if (isGuestUser(user)) {
+      Promise.resolve().then(() => {
+        if (!cancelled) {
+          setWorkouts(getGuestWorkouts())
+          setError('')
+          setReady(true)
+        }
+      })
+      return () => {
+        cancelled = true
+      }
+    }
 
     fetchUserWorkouts(user.uid)
       .then((data) => {
@@ -67,9 +92,31 @@ export function useWorkoutHistory() {
     }
   }, [user])
 
+  useEffect(() => {
+    if (!user || !isGuestUser(user)) return undefined
+
+    const refreshFromLocal = () => {
+      setWorkouts(getGuestWorkouts())
+      setReady(true)
+    }
+
+    window.addEventListener(GUEST_WORKOUTS_UPDATED_EVENT, refreshFromLocal)
+    window.addEventListener('focus', refreshFromLocal)
+
+    return () => {
+      window.removeEventListener(GUEST_WORKOUTS_UPDATED_EVENT, refreshFromLocal)
+      window.removeEventListener('focus', refreshFromLocal)
+    }
+  }, [user])
+
   const removeWorkout = useCallback(
     async (workoutId) => {
       if (!user) return
+      if (isGuestUser(user)) {
+        removeGuestWorkout(workoutId)
+        setWorkouts(getGuestWorkouts())
+        return
+      }
       await deleteWorkout(user.uid, workoutId)
       setWorkouts((prev) => prev.filter((w) => w.firestoreId !== workoutId))
     },

@@ -17,7 +17,7 @@ import { useAuth } from '../hooks/useAuth'
 import { getAuthErrorMessage } from '../utils/authErrors'
 
 export default function RegisterPage() {
-  const { register } = useAuth()
+  const { register, loginAsGuest } = useAuth()
   const navigate = useNavigate()
 
   const [email, setEmail] = useState('')
@@ -105,6 +105,20 @@ export default function RegisterPage() {
           {submitting ? 'Regisztráció...' : 'Fiók létrehozása'}
         </Button>
       </form>
+
+      <Button
+        type="button"
+        variant="ghost"
+        size="md"
+        disabled={submitting}
+        onClick={async () => {
+          setSubmitting(true)
+          await loginAsGuest()
+          navigate('/', { replace: true })
+        }}
+      >
+        Előbb demó kipróbálása
+      </Button>
 
       <p className="text-center text-sm text-slate-400">
         Van már fiókod?{' '}

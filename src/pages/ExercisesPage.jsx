@@ -21,6 +21,7 @@ import LoadingScreen from '../components/ui/LoadingScreen'
 import { useExercises } from '../hooks/useExercises'
 import { useAuth } from '../hooks/useAuth'
 import { deleteUserExercise } from '../services/exerciseService'
+import { isGuestUser } from '../utils/guestUser'
 
 export default function ExercisesPage() {
   const { user } = useAuth()
@@ -47,6 +48,11 @@ export default function ExercisesPage() {
   )
 
   const handleDelete = async (exercise) => {
+    if (isGuestUser(user)) {
+      setDeleteError('Demó módban nem törölhetsz gyakorlatot.')
+      return
+    }
+
     const confirmed = window.confirm(
       `Biztosan törlöd: „${exercise.name}”?`,
     )

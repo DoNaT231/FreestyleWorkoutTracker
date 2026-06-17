@@ -22,7 +22,7 @@ import { useUserProfile } from '../hooks/useUserProfile'
 
 export default function DashboardPage() {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, isGuest } = useAuth()
   const { defaultExercises, userExercises, loading } = useExercises()
   const { hasActiveWorkout, hydrated, workout } = useActiveWorkout()
   const { hasBodyWeight, loading: profileLoading } = useUserProfile()
@@ -45,8 +45,17 @@ export default function DashboardPage() {
         footer={<AppNav />}
       >
         <section className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
-          <p className="text-sm text-slate-400">Bejelentkezve mint</p>
-          <p className="mt-1 font-medium text-white">{user?.email}</p>
+          <p className="text-sm text-slate-400">
+            {isGuest ? 'Demó módban vagy' : 'Bejelentkezve mint'}
+          </p>
+          <p className="mt-1 font-medium text-white">
+            {isGuest ? 'Vendég felhasználó' : user?.email}
+          </p>
+          {isGuest && (
+            <p className="mt-2 text-sm text-amber-300/90">
+              Mintaadatokkal próbálhatod ki a Progress, napló és edzés funkciókat.
+            </p>
+          )}
           <p className="mt-3 text-sm text-slate-400">
             Elérhető gyakorlatok:{' '}
             <span className="font-medium text-emerald-400">{totalExercises}</span>
@@ -72,6 +81,10 @@ export default function DashboardPage() {
 
         <Link to="/history">
           <Button variant="secondary">Edzésnapló</Button>
+        </Link>
+
+        <Link to="/progress">
+          <Button variant="secondary">Progress</Button>
         </Link>
 
         <Link to="/exercises">

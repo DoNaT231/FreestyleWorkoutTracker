@@ -10,8 +10,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
   fetchDefaultExercises,
+  fetchLocalDefaultExercisesSync,
   fetchUserExercises,
 } from '../services/exerciseService'
+import { isGuestUser } from '../utils/guestUser'
 import { useAuth } from './useAuth'
 
 export function useExercises() {
@@ -35,6 +37,11 @@ export function useExercises() {
     setError('')
 
     try {
+      if (isGuestUser(user)) {
+        applyResult(fetchLocalDefaultExercisesSync(), [])
+        return
+      }
+
       const [defaults, custom] = await Promise.all([
         fetchDefaultExercises(),
         fetchUserExercises(user.uid),
@@ -52,6 +59,19 @@ export function useExercises() {
     if (!user) return
 
     let cancelled = false
+
+    if (isGuestUser(user)) {
+      Promise.resolve().then(() => {
+        if (!cancelled) {
+          applyResult(fetchLocalDefaultExercisesSync(), [])
+          setError('')
+          setReady(true)
+        }
+      })
+      return () => {
+        cancelled = true
+      }
+    }
 
     Promise.all([
       fetchDefaultExercises(),

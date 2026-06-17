@@ -16,6 +16,7 @@ import AppLayout from '../components/layout/AppLayout'
 import LogoutButton from '../components/layout/LogoutButton'
 import LoadingScreen from '../components/ui/LoadingScreen'
 import { useAuth } from '../hooks/useAuth'
+import { isGuestUser } from '../utils/guestUser'
 import {
   createUserExercise,
   fetchUserExercise,
@@ -80,6 +81,13 @@ export default function ExerciseFormPage() {
   const handleSubmit = async (event) => {
     event.preventDefault()
     setError('')
+
+    if (isGuestUser(user)) {
+      setError(
+        'Demó módban nem menthetsz gyakorlatot. Regisztrálj a saját naplódhoz.',
+      )
+      return
+    }
 
     const validationError = validateExerciseForm(values)
     if (validationError) {

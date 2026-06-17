@@ -17,6 +17,8 @@
  * @param {React.ReactNode} [props.headerActions] – fejléc jobb oldali gombok (pl. kijelentkezés)
  * @param {string} [props.mainClassName] – extra osztályok a main elemhez (pl. scroll layout)
  */
+import GuestModeBanner from './GuestModeBanner'
+
 export default function AppLayout({
   title,
   subtitle,
@@ -28,6 +30,7 @@ export default function AppLayout({
   return (
     // max-w-lg ≈ 512px – telefonon teljes szélesség, nagy képernyőn középre igazítva
     <div className="mx-auto flex h-dvh w-full max-w-lg flex-col bg-slate-950">
+      <GuestModeBanner />
       <header className="border-b border-slate-800 px-4 py-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">

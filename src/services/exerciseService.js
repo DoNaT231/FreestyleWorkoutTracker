@@ -24,6 +24,7 @@ import {
   updateDoc,
 } from 'firebase/firestore'
 import { db } from '../firebase'
+import { loadLocalDefaultExercises } from '../data/defaultExercisesCatalog'
 
 const DEFAULT_COLLECTION = 'defaultExercises'
 
@@ -36,13 +37,29 @@ function mapExerciseDoc(snapshot) {
 }
 
 /**
- * Alapértelmezett gyakorlatok betöltése (Firestore defaultExercises).
+ * Alapértelmezett gyakorlatok – Firestore, üres esetén / hiba esetén helyi fájl.
  * @returns {Promise<object[]>}
  */
 export async function fetchDefaultExercises() {
-  const q = query(collection(db, DEFAULT_COLLECTION), orderBy('name'))
-  const snapshot = await getDocs(q)
-  return snapshot.docs.map(mapExerciseDoc)
+  try {
+    const q = query(collection(db, DEFAULT_COLLECTION), orderBy('name'))
+    const snapshot = await getDocs(q)
+    if (snapshot.docs.length > 0) {
+      return snapshot.docs.map(mapExerciseDoc)
+    }
+  } catch (error) {
+    console.warn('Firestore defaultExercises – helyi katalógus használata:', error)
+  }
+
+  return loadLocalDefaultExercises()
+}
+
+/**
+ * Vendég mód – csak helyi katalógus, nincs Firestore hívás.
+ * @returns {object[]}
+ */
+export function fetchLocalDefaultExercisesSync() {
+  return loadLocalDefaultExercises()
 }
 
 /**

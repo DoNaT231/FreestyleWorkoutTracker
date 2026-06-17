@@ -16,6 +16,14 @@ import {
   signOut,
 } from 'firebase/auth'
 import { auth } from '../firebase'
+import {
+  clearGuestSession,
+  hasGuestSession,
+  saveGuestSession,
+  ensureDemoWorkoutsSeeded,
+} from '../services/guestStorage'
+import { clearActiveWorkout } from '../services/activeWorkoutStorage'
+import { createGuestUser } from '../utils/guestUser'
 import { AuthContext } from './authContext'
 
 /**
@@ -26,22 +34,48 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Firebase értesít, ha be-/kijelentkezik a user vagy session frissül
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser)
+      if (firebaseUser) {
+        clearGuestSession()
+        setUser(firebaseUser)
+        setLoading(false)
+        return
+      }
+
+      if (hasGuestSession()) {
+        ensureDemoWorkoutsSeeded()
+        setUser(createGuestUser())
+      } else {
+        setUser(null)
+      }
       setLoading(false)
     })
 
     return unsubscribe
   }, [])
 
+  const loginAsGuest = () => {
+    clearActiveWorkout()
+    saveGuestSession()
+    ensureDemoWorkoutsSeeded()
+    setUser(createGuestUser())
+    return Promise.resolve(createGuestUser())
+  }
+
+  const logout = async () => {
+    if (user?.isGuest) {
+      clearGuestSession({ keepWorkouts: true })
+      setUser(null)
+      return
+    }
+    await signOut(auth)
+  }
+
   const login = (email, password) =>
     signInWithEmailAndPassword(auth, email, password)
 
   const register = (email, password) =>
     createUserWithEmailAndPassword(auth, email, password)
-
-  const logout = () => signOut(auth)
 
   const value = useMemo(
     () => ({
@@ -50,6 +84,8 @@ export function AuthProvider({ children }) {
       login,
       register,
       logout,
+      loginAsGuest,
+      isGuest: Boolean(user?.isGuest),
       isAuthenticated: Boolean(user),
     }),
     [user, loading],
