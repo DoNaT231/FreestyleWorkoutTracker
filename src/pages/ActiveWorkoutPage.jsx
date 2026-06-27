@@ -7,7 +7,7 @@
  * Gyakorlat választás → pihenő beállítás → prep → aktív szett → pihenő → ismétlés.
  */
 
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import AppLayout from '../components/layout/AppLayout'
 import ExercisePicker from '../components/workout/ExercisePicker'
@@ -20,7 +20,12 @@ import LoadingScreen from '../components/ui/LoadingScreen'
 import { TIMER_PHASE } from '../constants/workout'
 import { useActiveWorkout } from '../hooks/useActiveWorkout'
 import { useExercises } from '../hooks/useExercises'
+import { useWorkoutHistory } from '../hooks/useWorkoutHistory'
 import { useWorkoutTimer } from '../hooks/useWorkoutTimer'
+import {
+  getLastExerciseSetValue,
+  getSuggestedRestPickerValue,
+} from '../utils/exerciseDefaults'
 import { playRestTimerEndSound } from '../utils/sounds'
 import { formatTimerDisplay, getTimerElapsedSeconds } from '../utils/timer'
 
@@ -43,8 +48,53 @@ export default function ActiveWorkoutPage() {
   } = useActiveWorkout()
 
   const { defaultExercises, userExercises, loading } = useExercises()
+  const { workouts: pastWorkouts } = useWorkoutHistory()
   const [pickerReps, setPickerReps] = useState(8)
   const [busy, setBusy] = useState(false)
+  const lastPrefilledSetIdRef = useRef(null)
+
+  const current = getCurrentExercise()
+  const phase = workout?.timer?.phase ?? TIMER_PHASE.IDLE
+
+  useEffect(() => {
+    lastPrefilledSetIdRef.current = null
+  }, [current?.localId])
+
+  const historyDefaultReps = useMemo(() => {
+    if (!current?.exerciseId) return null
+    return getLastExerciseSetValue(
+      current.exerciseId,
+      pastWorkouts,
+      workout?.firestoreId ?? null,
+    )
+  }, [current?.exerciseId, pastWorkouts, workout?.firestoreId])
+
+  // Gyakorlat választásakor: előző edzés értéke legyen az alap
+  useEffect(() => {
+    if (!current?.localId) return
+    if (historyDefaultReps != null) {
+      setPickerReps(historyDefaultReps)
+    }
+  }, [current?.localId, historyDefaultReps])
+
+  // Pihenő indulásakor: kitöltjük az alapértelmezett ismétlést / mp-t
+  useEffect(() => {
+    if (phase !== TIMER_PHASE.REST || !current?.sets?.length) return
+
+    const lastSet = current.sets[current.sets.length - 1]
+    if (!lastSet || lastSet.reps != null) return
+    if (lastPrefilledSetIdRef.current === lastSet.localId) return
+
+    const suggested = getSuggestedRestPickerValue({
+      sets: current.sets,
+      historyDefault: historyDefaultReps,
+      fallback: 8,
+    })
+
+    lastPrefilledSetIdRef.current = lastSet.localId
+    setPickerReps(suggested)
+    updateLastSetReps(suggested)
+  }, [phase, current?.localId, current?.sets, historyDefaultReps, updateLastSetReps])
 
   const handleRestComplete = useCallback(() => {
     playRestTimerEndSound()
@@ -55,9 +105,6 @@ export default function ActiveWorkoutPage() {
     onPrepComplete: completePrep,
     onRestComplete: handleRestComplete,
   })
-
-  const current = getCurrentExercise()
-  const phase = workout?.timer?.phase ?? TIMER_PHASE.IDLE
 
   const run = useCallback(async (action) => {
     setBusy(true)

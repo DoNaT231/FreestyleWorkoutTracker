@@ -22,6 +22,7 @@ import {
   collectProgressRecords,
   countNewRecordsInPeriod,
 } from './progressRecords'
+import { withoutDemoWorkouts } from '../guestWorkouts'
 import {
   filterWorkoutsByPeriod,
   getCompletedWorkouts,
@@ -32,6 +33,7 @@ import {
   getThisWeekLoad,
   getWeekOverWeekChange,
 } from './weeklyLoads'
+import { buildWorkoutCategorySeries, buildWorkoutScoreSeries } from './workoutScoreSeries'
 
 function aggregatePeriodStats(workouts) {
   let totalSets = 0
@@ -171,7 +173,8 @@ function buildStrengthDetail(workouts, exerciseId) {
  */
 export function computeProgressData(allWorkouts, options) {
   const { periodId, keyExerciseId = null, selectedExerciseId = null } = options
-  const completed = getCompletedWorkouts(allWorkouts)
+  const allCompleted = getCompletedWorkouts(allWorkouts)
+  const completed = withoutDemoWorkouts(allCompleted)
   const periodWorkouts = filterWorkoutsByPeriod(completed, periodId)
   const periodStats = aggregatePeriodStats(periodWorkouts)
   const allTimeStats = aggregatePeriodStats(completed)
@@ -197,6 +200,8 @@ export function computeProgressData(allWorkouts, options) {
   const weeklySeries = buildWeeklyLoadSeries(completed, 8)
   const thisWeek = getThisWeekLoad(weeklySeries)
   const weekChange = getWeekOverWeekChange(weeklySeries)
+  const workoutScoreSeries = buildWorkoutScoreSeries(periodWorkouts)
+  const workoutCategorySeries = buildWorkoutCategorySeries(periodWorkouts)
 
   const selectedTimeline = selectedExercise
     ? {
@@ -244,7 +249,7 @@ export function computeProgressData(allWorkouts, options) {
   const consistency = calculateConsistency(completed)
 
   return {
-    hasWorkouts: completed.length > 0,
+    hasWorkouts: allCompleted.length > 0,
     hasMultipleWorkouts: completed.length >= 2,
     hasPeriodWorkouts: periodWorkouts.length > 0,
     periodStats,
@@ -263,6 +268,8 @@ export function computeProgressData(allWorkouts, options) {
       thisWeek,
       weekChange,
     },
+    workoutScoreSeries,
+    workoutCategorySeries,
     activity: periodStats,
     categoryBreakdown: periodStats.categoryBreakdown,
     exercises,

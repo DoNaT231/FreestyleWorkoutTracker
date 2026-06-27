@@ -18,6 +18,7 @@ import ProgressSection, {
   ProgressStatRow,
 } from '../components/progress/ProgressSection'
 import SimpleBarChart from '../components/progress/SimpleBarChart'
+import WorkoutChartsPanel from '../components/progress/WorkoutChartsPanel'
 import TrendList from '../components/progress/TrendList'
 import Button from '../components/ui/Button'
 import LoadingScreen from '../components/ui/LoadingScreen'
@@ -290,6 +291,16 @@ export default function ProgressPage() {
               </div>
             )}
           </ProgressSection>
+
+          {/* 4b. Per-workout volume & strength */}
+          {data.workoutScoreSeries.length > 0 && (
+            <ProgressSection title="Edzésenkénti trend">
+              <WorkoutChartsPanel
+                scoreSeries={data.workoutScoreSeries}
+                categorySeries={data.workoutCategorySeries}
+              />
+            </ProgressSection>
+          )}
 
           {/* 5. Activity */}
           <ProgressSection title="Aktivitás">

@@ -23,6 +23,7 @@ import {
 import { SYNC_STATUS, WORKOUT_STATUS } from '../constants/workout'
 import { GUEST_USER_ID } from '../constants/guest'
 import { db } from '../firebase'
+import { isDemoWorkout } from '../utils/guestWorkouts'
 import { sanitizeWorkoutForFirestore } from '../utils/firestoreSanitize'
 import { mapWorkoutDocument } from '../utils/workoutDisplay'
 
@@ -47,6 +48,7 @@ export async function fetchUserWorkouts(userId) {
   return snapshot.docs
     .map(mapWorkoutDocument)
     .filter(Boolean)
+    .filter((w) => !isDemoWorkout(w))
 }
 
 /**

@@ -16,7 +16,7 @@ import {
   GUEST_WORKOUTS_UPDATED_EVENT,
   removeGuestWorkout,
 } from '../services/guestStorage'
-import { getGuestWorkouts } from '../utils/guestWorkouts'
+import { getGuestWorkouts, workoutsForAccount } from '../utils/guestWorkouts'
 import { isGuestUser } from '../utils/guestUser'
 import { useAuth } from './useAuth'
 
@@ -38,7 +38,7 @@ export function useWorkoutHistory() {
         setWorkouts(getGuestWorkouts())
       } else {
         const data = await fetchUserWorkouts(user.uid)
-        setWorkouts(data)
+        setWorkouts(workoutsForAccount(data, false))
       }
     } catch (err) {
       console.error(err)
@@ -75,7 +75,7 @@ export function useWorkoutHistory() {
     fetchUserWorkouts(user.uid)
       .then((data) => {
         if (!cancelled) {
-          setWorkouts(data)
+          setWorkouts(workoutsForAccount(data, false))
           setError('')
         }
       })

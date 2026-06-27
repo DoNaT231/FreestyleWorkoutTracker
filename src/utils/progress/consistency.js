@@ -6,6 +6,7 @@
  */
 
 import { getWorkoutDateMs, getWeekStartMonday } from './periods'
+import { withoutDemoWorkouts } from '../guestWorkouts'
 
 function countWorkoutsSince(workouts, daysAgo, referenceDate = new Date()) {
   const cutoff = new Date(referenceDate)
@@ -75,7 +76,8 @@ function calculateBestWeekStreak(weekKeys) {
  * @param {object[]} workouts – completed, sorted any order
  */
 export function calculateConsistency(workouts, referenceDate = new Date()) {
-  const weekKeys = getWorkoutWeekKeys(workouts)
+  const ownWorkouts = withoutDemoWorkouts(workouts)
+  const weekKeys = getWorkoutWeekKeys(ownWorkouts)
 
   const dotGridDays = []
   for (let i = 29; i >= 0; i -= 1) {
@@ -86,7 +88,7 @@ export function calculateConsistency(workouts, referenceDate = new Date()) {
     const dayEnd = new Date(day)
     dayEnd.setHours(23, 59, 59, 999)
 
-    const hasWorkout = workouts.some((w) => {
+    const hasWorkout = ownWorkouts.some((w) => {
       const ms = getWorkoutDateMs(w)
       return Number.isFinite(ms) && ms >= day.getTime() && ms <= dayEnd.getTime()
     })
@@ -99,8 +101,8 @@ export function calculateConsistency(workouts, referenceDate = new Date()) {
   }
 
   return {
-    workoutsLast7Days: countWorkoutsSince(workouts, 7, referenceDate),
-    workoutsLast30Days: countWorkoutsSince(workouts, 30, referenceDate),
+    workoutsLast7Days: countWorkoutsSince(ownWorkouts, 7, referenceDate),
+    workoutsLast30Days: countWorkoutsSince(ownWorkouts, 30, referenceDate),
     currentWeekStreak: calculateWeekStreak(weekKeys, referenceDate),
     bestWeekStreak: calculateBestWeekStreak(weekKeys),
     dotGridDays,

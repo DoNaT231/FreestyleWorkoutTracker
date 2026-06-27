@@ -16,6 +16,21 @@ export function isDemoWorkout(workout) {
   return String(workout.firestoreId ?? '').startsWith('demo-workout')
 }
 
+/** Minta edzések (Edzés 1–6) kiszűrése – statisztikákhoz és éles fiókhoz. */
+export function withoutDemoWorkouts(workouts) {
+  return (workouts ?? []).filter((w) => !isDemoWorkout(w))
+}
+
+/**
+ * Vendég: teljes lista (minta + saját). Bejelentkezve: csak éles edzések.
+ * @param {object[]} workouts
+ * @param {boolean} isGuest
+ */
+export function workoutsForAccount(workouts, isGuest) {
+  if (isGuest) return workouts ?? []
+  return withoutDemoWorkouts(workouts)
+}
+
 /**
  * @param {object[]} workouts
  */

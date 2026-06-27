@@ -25,7 +25,7 @@ import { useAuth } from '../hooks/useAuth'
 import { loadLastCompletedWorkout } from '../services/lastWorkoutSummaryStorage'
 import { fetchUserWorkouts } from '../services/workoutService'
 import { isGuestUser } from '../utils/guestUser'
-import { getGuestWorkouts } from '../utils/guestWorkouts'
+import { getGuestWorkouts, workoutsForAccount } from '../utils/guestWorkouts'
 import { buildPostWorkoutSummary } from '../utils/workoutSummary'
 
 export default function WorkoutPostSummaryPage() {
@@ -56,7 +56,7 @@ export default function WorkoutPostSummaryPage() {
 
     fetchUserWorkouts(user.uid)
       .then((list) => {
-        if (!cancelled) setPastWorkouts(list)
+        if (!cancelled) setPastWorkouts(workoutsForAccount(list, false))
       })
       .catch(console.error)
 
